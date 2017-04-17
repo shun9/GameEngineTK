@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "Game.h"
+#include <CommonStates.h>
 
 extern void ExitGame();
 
@@ -11,6 +12,20 @@ using namespace DirectX;
 
 using Microsoft::WRL::ComPtr;
 
+XMFLOAT3 g_vertex[]=
+{
+	{ 350.0f, 300.0f, 0.0f },
+	{ 350.0f, 400.0f, 0.0f },
+	{ 450.0f, 400.0f, 0.0f },
+	{ 450.0f, 300.0f, 0.0f },
+	{ 410.0f, 240.0f, 0.0f },
+	{ 510.0f, 240.0f, 0.0f },
+	{ 410.0f, 340.0f, 0.0f },
+	{ 510.0f, 340.0f, 0.0f },
+};
+
+
+//コンストラクタ
 Game::Game() :
     m_window(0),
     m_outputWidth(800),
@@ -20,6 +35,7 @@ Game::Game() :
 }
 
 // Initialize the Direct3D resources required to run.
+//初期化
 void Game::Initialize(HWND window, int width, int height)
 {
     m_window = window;
@@ -36,6 +52,32 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
+	/*--以下に記述--*/
+
+	m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(m_d3dContext.Get());
+
+	m_basicEffect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
+	m_basicEffect->SetProjection(XMMatrixOrthographicOffCenterRH(0,
+		width, height, 0, 0, 1));
+	m_basicEffect->SetVertexColorEnabled(true);
+
+	void const* shaderByteCode;
+	size_t byteCodeLength;
+
+	m_basicEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
+
+	m_d3dDevice->CreateInputLayout(VertexPositionColor::InputElements,
+								   VertexPositionColor::InputElementCount,
+								   shaderByteCode, byteCodeLength,
+								   m_inputLayout.GetAddressOf());
+
+	CommonStates states(m_d3dDevice.Get());
+	m_d3dContext->OMSetBlendState(states.Opaque(), nullptr, 0xFFFFFFFF);
+	m_d3dContext->OMSetDepthStencilState(states.DepthNone(), 0);
+	m_d3dContext->RSSetState(states.CullNone());
+
+	m_basicEffect->Apply(m_d3dContext.Get());
+	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 }
 
 // Executes the basic game loop.
@@ -45,20 +87,24 @@ void Game::Tick()
     {
         Update(m_timer);
     });
-
-    Render();
+	Render();
 }
 
+
 // Updates the world.
+//更新
 void Game::Update(DX::StepTimer const& timer)
 {
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
-    elapsedTime;
+	/*--以下に記述--*/
+	elapsedTime;
 }
 
+
 // Draws the scene.
+//描画
 void Game::Render()
 {
     // Don't try to render anything before the first Update.
@@ -70,11 +116,55 @@ void Game::Render()
     Clear();
 
     // TODO: Add your rendering code here.
+	/*--以下に記述--*/
+
+	m_primitiveBatch->Begin();
+
+
+	//背面
+	XMFLOAT4 color = { 0.6f,0.6f,0.6f,0.0f };
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[4], color),
+							   VertexPositionColor(g_vertex[6], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[6], color),
+							   VertexPositionColor(g_vertex[7], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[6], color),
+							   VertexPositionColor(g_vertex[1], color));
+
+	//斜め線
+	color = { 0.0f,0.0f,0.0f,0.0f };
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[0], color),
+							   VertexPositionColor(g_vertex[4], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[5], color),
+							   VertexPositionColor(g_vertex[3], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[7], color),
+							   VertexPositionColor(g_vertex[2], color));
+
+
+	//正面
+	color = { 0.0f,0.0f,0.0f,0.0f };
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[0], color),
+							   VertexPositionColor(g_vertex[1], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[1], color),
+							   VertexPositionColor(g_vertex[2], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[2], color),
+							   VertexPositionColor(g_vertex[3], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[3], color),
+							   VertexPositionColor(g_vertex[0], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[4], color),
+		VertexPositionColor(g_vertex[5], color));
+	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[5], color),
+		VertexPositionColor(g_vertex[7], color));
+
+
+
+	m_primitiveBatch->End();
+
 
     Present();
 }
 
 // Helper method to clear the back buffers.
+//画面を塗りつぶす
 void Game::Clear()
 {
     // Clear the views.
@@ -89,6 +179,7 @@ void Game::Clear()
 }
 
 // Presents the back buffer contents to the screen.
+//描画命令を実行
 void Game::Present()
 {
     // The first argument instructs DXGI to block until VSync, putting the application

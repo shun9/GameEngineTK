@@ -3,7 +3,9 @@
 //
 
 #pragma once
-
+#include <PrimitiveBatch.h>
+#include <VertexTypes.h>
+#include <Effects.h>
 #include "StepTimer.h"
 
 
@@ -11,6 +13,12 @@
 // provides a game loop.
 class Game
 {
+private:
+	//プリミティブバッチ
+	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>>m_primitiveBatch;
+	std::unique_ptr<DirectX::BasicEffect>m_basicEffect;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout>m_inputLayout;
+
 public:
 
     Game();
