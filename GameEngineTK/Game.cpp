@@ -4,26 +4,13 @@
 
 #include "pch.h"
 #include "Game.h"
-#include <CommonStates.h>
 
 extern void ExitGame();
 
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 using Microsoft::WRL::ComPtr;
-
-XMFLOAT3 g_vertex[]=
-{
-	{ 350.0f, 300.0f, 0.0f },
-	{ 350.0f, 400.0f, 0.0f },
-	{ 450.0f, 400.0f, 0.0f },
-	{ 450.0f, 300.0f, 0.0f },
-	{ 410.0f, 240.0f, 0.0f },
-	{ 510.0f, 240.0f, 0.0f },
-	{ 410.0f, 340.0f, 0.0f },
-	{ 510.0f, 340.0f, 0.0f },
-};
-
 
 //コンストラクタ
 Game::Game() :
@@ -54,30 +41,41 @@ void Game::Initialize(HWND window, int width, int height)
     */
 	/*--以下に記述--*/
 
-	m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(m_d3dContext.Get());
+	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(m_d3dContext.Get());
 
-	m_basicEffect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
-	m_basicEffect->SetProjection(XMMatrixOrthographicOffCenterRH(0,
-		width, height, 0, 0, 1));
-	m_basicEffect->SetVertexColorEnabled(true);
+	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
+	m_effect->SetProjection(XMMatrixOrthographicOffCenterRH(0,
+		width, height, 0.0f, 0.0f, 1.0f));
+	m_effect->SetVertexColorEnabled(true);
 
 	void const* shaderByteCode;
 	size_t byteCodeLength;
 
-	m_basicEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
+	m_effect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
 
 	m_d3dDevice->CreateInputLayout(VertexPositionColor::InputElements,
 								   VertexPositionColor::InputElementCount,
 								   shaderByteCode, byteCodeLength,
 								   m_inputLayout.GetAddressOf());
 
-	CommonStates states(m_d3dDevice.Get());
-	m_d3dContext->OMSetBlendState(states.Opaque(), nullptr, 0xFFFFFFFF);
-	m_d3dContext->OMSetDepthStencilState(states.DepthNone(), 0);
-	m_d3dContext->RSSetState(states.CullNone());
+	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
+	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
+	m_d3dContext->RSSetState(m_states->CullNone());
 
-	m_basicEffect->Apply(m_d3dContext.Get());
+
+	//行列初期化
+	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
+		Vector3::Zero, Vector3::UnitY);
+	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
+		float(m_outputWidth) / float(m_outputHeight), 0.1f, 10.f);
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_proj);
+	m_effect->Apply(m_d3dContext.Get());
 	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
+
+	//カメラ生成
+	m_camera = std::make_unique<DebugCamera>(m_outputWidth, m_outputHeight);
 }
 
 // Executes the basic game loop.
@@ -100,6 +98,12 @@ void Game::Update(DX::StepTimer const& timer)
     // TODO: Add your game logic here.
 	/*--以下に記述--*/
 	elapsedTime;
+	
+	//カメラ更新
+	m_camera->Update();
+
+	//ビュー行列の更新
+	m_view = m_camera->GetCameraMatrix();
 }
 
 
@@ -117,47 +121,64 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	/*--以下に記述--*/
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_proj);
+	m_effect->Apply(m_d3dContext.Get());
+	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 
-	m_primitiveBatch->Begin();
-
-
-	//背面
-	XMFLOAT4 color = { 0.6f,0.6f,0.6f,0.0f };
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[4], color),
-							   VertexPositionColor(g_vertex[6], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[6], color),
-							   VertexPositionColor(g_vertex[7], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[6], color),
-							   VertexPositionColor(g_vertex[1], color));
-
-	//斜め線
-	color = { 0.0f,0.0f,0.0f,0.0f };
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[0], color),
-							   VertexPositionColor(g_vertex[4], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[5], color),
-							   VertexPositionColor(g_vertex[3], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[7], color),
-							   VertexPositionColor(g_vertex[2], color));
+	m_batch->Begin();
 
 
-	//正面
-	color = { 0.0f,0.0f,0.0f,0.0f };
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[0], color),
-							   VertexPositionColor(g_vertex[1], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[1], color),
-							   VertexPositionColor(g_vertex[2], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[2], color),
-							   VertexPositionColor(g_vertex[3], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[3], color),
-							   VertexPositionColor(g_vertex[0], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[4], color),
-		VertexPositionColor(g_vertex[5], color));
-	m_primitiveBatch->DrawLine(VertexPositionColor(g_vertex[5], color),
-		VertexPositionColor(g_vertex[7], color));
+	VertexPositionColor v1(Vector3(0.f, 0.5f, 0.5f), Colors::Yellow);
+	VertexPositionColor v2(Vector3(0.5f, -0.5f, 0.5f), Colors::Yellow);
+	VertexPositionColor v3(Vector3(-0.5f, -0.5f, 0.5f), Colors::Yellow);
 
+	m_batch->DrawTriangle(v1, v2, v3);
 
+	Vector4 color = Vector4{ 0.0f,0.0f,0.0f,0.0f };
+	Vector3 g_vertex[] =
+	{
+		{  1.0f, -1.0f, -1.0f },
+		{ -1.0f, -1.0f, -1.0f },
+		{ -1.0f, -1.0f,  1.0f },
+		{  1.0f, -1.0f,  1.0f },
 
-	m_primitiveBatch->End();
+		{  1.0f,  1.0f, -1.0f },
+		{ -1.0f,  1.0f, -1.0f },
+		{ -1.0f,  1.0f,  1.0f },
+		{  1.0f,  1.0f,  1.0f },
+	};
+
+	
+	//底面
+	m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
+					  VertexPositionColor(g_vertex[1], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
+					  VertexPositionColor(g_vertex[2], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
+					  VertexPositionColor(g_vertex[3], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
+					  VertexPositionColor(g_vertex[0], color));
+	//上面
+	m_batch->DrawLine(VertexPositionColor(g_vertex[4], color),
+					  VertexPositionColor(g_vertex[5], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[5], color),
+					  VertexPositionColor(g_vertex[6], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[6], color),
+					  VertexPositionColor(g_vertex[7], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[7], color),
+					  VertexPositionColor(g_vertex[4], color));
+	//縦線
+	m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
+					  VertexPositionColor(g_vertex[4], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
+					  VertexPositionColor(g_vertex[5], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
+					  VertexPositionColor(g_vertex[6], color));
+	m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
+					  VertexPositionColor(g_vertex[7], color));
+
+	m_batch->End();
 
 
     Present();
