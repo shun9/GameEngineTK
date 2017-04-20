@@ -41,7 +41,7 @@ void Game::Initialize(HWND window, int width, int height)
     */
 	/*--à»â∫Ç…ãLèq--*/
 
-	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(m_d3dContext.Get());
+	m_batch = std::make_unique<PrimitiveBatch<VertexPositionNormal>>(m_d3dContext.Get());
 
 	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
 	m_effect->SetProjection(XMMatrixOrthographicOffCenterRH(0,
@@ -58,10 +58,6 @@ void Game::Initialize(HWND window, int width, int height)
 								   shaderByteCode, byteCodeLength,
 								   m_inputLayout.GetAddressOf());
 
-	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
-	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
-	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
-	m_d3dContext->RSSetState(m_states->CullNone());
 
 
 	//çsóÒèâä˙âª
@@ -126,57 +122,81 @@ void Game::Render()
 	m_effect->Apply(m_d3dContext.Get());
 	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 
+	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
+	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
+	m_d3dContext->RSSetState(m_states->CullNone());
+
 	m_batch->Begin();
 
-
-	VertexPositionColor v1(Vector3(0.f, 0.5f, 0.5f), Colors::Yellow);
-	VertexPositionColor v2(Vector3(0.5f, -0.5f, 0.5f), Colors::Yellow);
-	VertexPositionColor v3(Vector3(-0.5f, -0.5f, 0.5f), Colors::Yellow);
-
-	m_batch->DrawTriangle(v1, v2, v3);
-
-	Vector4 color = Vector4{ 0.0f,0.0f,0.0f,0.0f };
-	Vector3 g_vertex[] =
+	VertexPositionNormal vertices[] =
 	{
-		{  1.0f, -1.0f, -1.0f },
-		{ -1.0f, -1.0f, -1.0f },
-		{ -1.0f, -1.0f,  1.0f },
-		{  1.0f, -1.0f,  1.0f },
+		{ Vector3( 1.0f, -1.0f, -1.0f),Vector3(0.0f, -1.0f, 0.0f) },
+		{ Vector3(-1.0f, -1.0f, -1.0f),Vector3(0.0f, -1.0f, 0.0f) },
+		{ Vector3(-1.0f, -1.0f,  1.0f),Vector3(0.0f, -1.0f, 0.0f) },
+		{ Vector3(1.0f, -1.0f,  1.0f) ,Vector3(0.0f, -1.0f, 0.0f) },
 
-		{  1.0f,  1.0f, -1.0f },
-		{ -1.0f,  1.0f, -1.0f },
-		{ -1.0f,  1.0f,  1.0f },
-		{  1.0f,  1.0f,  1.0f },
+		{ Vector3(1.0f,  1.0f, -1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
+		{ Vector3(-1.0f, 1.0f, -1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
+		{ Vector3(-1.0f, 1.0f,  1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
+		{ Vector3(1.0f,  1.0f,  1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
 	};
 
+	uint16_t indices[]=
+	{
+		1,0,3,
+		1,2,3,
+		2,6,3,
+		3,6,7,
+		0,3,7,
+		0,7,4,
+		0,5,4,
+		0,1,5,
+		1,5,2,
+		2,5,6,
+		4,5,6,
+		4,6,7
+	};
 	
-	//íÍñ 
-	m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
-					  VertexPositionColor(g_vertex[1], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
-					  VertexPositionColor(g_vertex[2], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
-					  VertexPositionColor(g_vertex[3], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
-					  VertexPositionColor(g_vertex[0], color));
-	//è„ñ 
-	m_batch->DrawLine(VertexPositionColor(g_vertex[4], color),
-					  VertexPositionColor(g_vertex[5], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[5], color),
-					  VertexPositionColor(g_vertex[6], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[6], color),
-					  VertexPositionColor(g_vertex[7], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[7], color),
-					  VertexPositionColor(g_vertex[4], color));
-	//ècê¸
-	m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
-					  VertexPositionColor(g_vertex[4], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
-					  VertexPositionColor(g_vertex[5], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
-					  VertexPositionColor(g_vertex[6], color));
-	m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
-					  VertexPositionColor(g_vertex[7], color));
+	m_batch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices, 12, vertices, 8);
+
+
+	//VertexPositionColor v1(Vector3(0.f, 0.5f, 0.5f), Colors::Yellow);
+	//VertexPositionColor v2(Vector3(0.5f, -0.5f, 0.5f), Colors::Yellow);
+	//VertexPositionColor v3(Vector3(-0.5f, -0.5f, 0.5f), Colors::Yellow);
+
+	//m_batch->DrawTriangle(v1, v2, v3);
+
+	//Vector4 color = Vector4{ 0.0f,0.0f,0.0f,0.0f };
+
+
+	////íÍñ 
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
+	//				  VertexPositionColor(g_vertex[1], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
+	//				  VertexPositionColor(g_vertex[2], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
+	//				  VertexPositionColor(g_vertex[3], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
+	//				  VertexPositionColor(g_vertex[0], color));
+	////è„ñ 
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[4], color),
+	//				  VertexPositionColor(g_vertex[5], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[5], color),
+	//				  VertexPositionColor(g_vertex[6], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[6], color),
+	//				  VertexPositionColor(g_vertex[7], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[7], color),
+	//				  VertexPositionColor(g_vertex[4], color));
+	////ècê¸
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
+	//				  VertexPositionColor(g_vertex[4], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
+	//				  VertexPositionColor(g_vertex[5], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
+	//				  VertexPositionColor(g_vertex[6], color));
+	//m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
+	//				  VertexPositionColor(g_vertex[7], color));
 
 	m_batch->End();
 

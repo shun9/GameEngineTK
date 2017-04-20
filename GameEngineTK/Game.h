@@ -71,7 +71,7 @@ private:
 	//ステート
 	std::unique_ptr<DirectX::CommonStates> m_states;
 	//プリミティブバッチ
-	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>>m_batch;
+	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionNormal>>m_batch;
 	//エフェクト
 	std::unique_ptr<DirectX::BasicEffect>m_effect;
 
