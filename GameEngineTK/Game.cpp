@@ -125,7 +125,7 @@ void Game::Render()
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
 	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
-	m_d3dContext->RSSetState(m_states->CullNone());
+	m_d3dContext->RSSetState(m_states->Wireframe());
 
 	m_batch->Begin();
 
@@ -158,7 +158,7 @@ void Game::Render()
 		4,6,7
 	};
 	
-	m_batch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices, 12, vertices, 8);
+	m_batch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices, 36, vertices, 8);
 
 
 	//VertexPositionColor v1(Vector3(0.f, 0.5f, 0.5f), Colors::Yellow);
