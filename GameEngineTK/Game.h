@@ -8,6 +8,7 @@
 #include <Effects.h>
 #include <CommonStates.h>
 #include <SimpleMath.h>
+#include <Model.h>
 #include "StepTimer.h"
 #include "DebugCamera.h"
 
@@ -84,4 +85,9 @@ private:
 	DirectX::SimpleMath::Matrix m_proj;	
 
 	std::unique_ptr<DebugCamera> m_camera;
+
+	std::unique_ptr<DirectX::Model>m_model;
+	std::unique_ptr<DirectX::Model>m_sky;
+	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
+
 };

@@ -64,14 +64,22 @@ void Game::Initialize(HWND window, int width, int height)
 	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
 		Vector3::Zero, Vector3::UnitY);
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
-		float(m_outputWidth) / float(m_outputHeight), 0.1f, 10.f);
+		float(m_outputWidth) / float(m_outputHeight), 0.1f, 1000.0f);
 	m_effect->SetView(m_view);
 	m_effect->SetProjection(m_proj);
 	m_effect->Apply(m_d3dContext.Get());
 	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
+	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 
 	//カメラ生成
 	m_camera = std::make_unique<DebugCamera>(m_outputWidth, m_outputHeight);
+
+	//エフェクトファクトリー生成
+	m_effectFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
+	m_effectFactory->SetDirectory(L"Resources");
+
+	m_model = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground1.cmo", *m_effectFactory);
+	m_sky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
 }
 
 // Executes the basic game loop.
@@ -117,15 +125,21 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	/*--以下に記述--*/
+	Matrix world = Matrix::CreateScale(10000.0f)*Matrix::CreateTranslation(Vector3(0.0f, -1.0f, 0.0f));
+	m_model->Draw(m_d3dContext.Get(), *m_states, world, m_view, m_proj);
+	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity , m_view, m_proj);
+
+	
 	m_effect->SetView(m_view);
 	m_effect->SetProjection(m_proj);
 	m_effect->Apply(m_d3dContext.Get());
 	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 
-	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
+
 	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
 	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
 	m_d3dContext->RSSetState(m_states->Wireframe());
+
 
 	m_batch->Begin();
 
@@ -199,7 +213,6 @@ void Game::Render()
 	//				  VertexPositionColor(g_vertex[7], color));
 
 	m_batch->End();
-
 
     Present();
 }
