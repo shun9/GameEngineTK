@@ -140,12 +140,9 @@ void Game::Render()
 	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
 	m_d3dContext->RSSetState(m_states->Wireframe());
 
-
-	m_batch->Begin();
-
 	VertexPositionNormal vertices[] =
 	{
-		{ Vector3( 1.0f, -1.0f, -1.0f),Vector3(0.0f, -1.0f, 0.0f) },
+		{ Vector3(1.0f, -1.0f, -1.0f),Vector3(0.0f, -1.0f, 0.0f) },
 		{ Vector3(-1.0f, -1.0f, -1.0f),Vector3(0.0f, -1.0f, 0.0f) },
 		{ Vector3(-1.0f, -1.0f,  1.0f),Vector3(0.0f, -1.0f, 0.0f) },
 		{ Vector3(1.0f, -1.0f,  1.0f) ,Vector3(0.0f, -1.0f, 0.0f) },
@@ -156,7 +153,7 @@ void Game::Render()
 		{ Vector3(1.0f,  1.0f,  1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
 	};
 
-	uint16_t indices[]=
+	uint16_t indices[] =
 	{
 		1,0,3,
 		1,2,3,
@@ -171,7 +168,10 @@ void Game::Render()
 		4,5,6,
 		4,6,7
 	};
-	
+
+
+	m_batch->Begin();
+
 	m_batch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices, 36, vertices, 8);
 
 
@@ -211,6 +211,13 @@ void Game::Render()
 	//				  VertexPositionColor(g_vertex[6], color));
 	//m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
 	//				  VertexPositionColor(g_vertex[7], color));
+
+	m_batch->End();
+
+
+	m_batch->Begin();
+
+	m_batch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices, 36, vertices, 8);
 
 	m_batch->End();
 
