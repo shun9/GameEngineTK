@@ -41,34 +41,11 @@ void Game::Initialize(HWND window, int width, int height)
     */
 	/*--以下に記述--*/
 
-	m_batch = std::make_unique<PrimitiveBatch<VertexPositionNormal>>(m_d3dContext.Get());
-
-	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
-	m_effect->SetProjection(XMMatrixOrthographicOffCenterRH(0,
-		width, height, 0.0f, 0.0f, 1.0f));
-	m_effect->SetVertexColorEnabled(true);
-
-	void const* shaderByteCode;
-	size_t byteCodeLength;
-
-	m_effect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
-
-	m_d3dDevice->CreateInputLayout(VertexPositionColor::InputElements,
-								   VertexPositionColor::InputElementCount,
-								   shaderByteCode, byteCodeLength,
-								   m_inputLayout.GetAddressOf());
-
-
-
 	//行列初期化
 	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
 		Vector3::Zero, Vector3::UnitY);
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
 		float(m_outputWidth) / float(m_outputHeight), 0.1f, 500.0f);
-	m_effect->SetView(m_view);
-	m_effect->SetProjection(m_proj);
-	m_effect->Apply(m_d3dContext.Get());
-	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 
 	//カメラ生成
@@ -79,7 +56,7 @@ void Game::Initialize(HWND window, int width, int height)
 	m_effectFactory->SetDirectory(L"Resources");
 
 	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground1.cmo", *m_effectFactory);
-	m_sky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
+	m_sky	= Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
 	m_ball = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ball.cmo", *m_effectFactory);
 }
 
@@ -110,6 +87,14 @@ void Game::Update(DX::StepTimer const& timer)
 	//ビュー行列の更新
 	m_view = m_camera->GetCameraMatrix();
 
+	//回転用角度
+	static float angle;
+	angle += 0.1f;
+	if (angle >= 360.0f)
+	{
+		angle = 0.0f;
+	}
+
 	for (int i = 0; i < 21; i++)
 	{
 		//ロール
@@ -121,13 +106,21 @@ void Game::Update(DX::StepTimer const& timer)
 		//ヨー（方位角）
 		Matrix rotateY;
 
-		Matrix trans = Matrix::CreateTranslation(Vector3(20.0f, 0.0f, 0.0f));
-		Matrix rotate = Matrix::CreateRotationY(10.0f*(i % 10));
-		//Matrix trans = Matrix::CreateTranslation(Vector3(cosf(36.0f * (i % 10))*(20.0f*(2 - i / 10)), 0.0f, sinf(36.0f * (i % 10))*(20.0f*(2 - i / 10))));
+		//円状に配置
+		Matrix trans = Matrix::CreateTranslation(Vector3(20.0f*(2-(i/10)), 0.0f, 0.0f));
+		
+		//真ん中の列だけ逆回転させる
+		int sign = 1;
+		if (2 - (i / 10) == 1)
+		{
+			sign *= -1;
+		}
 
-		//m_ballWorld[i] = trans;
+		//回転させる
+		Matrix rotate = Matrix::CreateRotationY(XMConvertToRadians(36.0f*(i % 10) + (angle * sign)));
+
+		//合算
 		m_ballWorld[i] = trans * rotate;
-		//m_ballWorld[i] = rotate * trans;
 	}
 }
 
@@ -146,21 +139,14 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	/*--以下に記述--*/
-	Matrix world = Matrix::CreateScale(500.0f)*Matrix::CreateTranslation(Vector3(0.0f, -1.0f, 0.0f));
-	m_ground->Draw(m_d3dContext.Get(), *m_states, world, m_view, m_proj);
+	Matrix scale = Matrix::CreateScale(500.0f);
+	m_ground->Draw(m_d3dContext.Get(), *m_states, scale, m_view, m_proj);
 	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 21; i++)
 	{
 		m_ball->Draw(m_d3dContext.Get(), *m_states, m_ballWorld[i], m_view, m_proj);
 	}
-
-	
-
-	m_batch->Begin();
-
-
-	m_batch->End();
 
     Present();
 }

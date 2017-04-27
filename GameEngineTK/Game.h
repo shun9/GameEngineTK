@@ -69,15 +69,6 @@ private:
     DX::StepTimer                                   m_timer;
 
 private:
-	//ステート
-	std::unique_ptr<DirectX::CommonStates> m_states;
-	//プリミティブバッチ
-	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionNormal>>m_batch;
-	//エフェクト
-	std::unique_ptr<DirectX::BasicEffect>m_effect;
-
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>m_inputLayout;
-
 
 	//各種行列
 	DirectX::SimpleMath::Matrix m_world;	
@@ -92,5 +83,7 @@ private:
 	std::unique_ptr<DirectX::Model>m_sky;
 	std::unique_ptr<DirectX::Model>m_ball;
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
+	//ステート
+	std::unique_ptr<DirectX::CommonStates> m_states;
 
 };
