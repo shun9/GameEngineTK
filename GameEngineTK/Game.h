@@ -82,12 +82,15 @@ private:
 	//äeéÌçsóÒ
 	DirectX::SimpleMath::Matrix m_world;	
 	DirectX::SimpleMath::Matrix m_view;				
-	DirectX::SimpleMath::Matrix m_proj;	
+	DirectX::SimpleMath::Matrix m_proj;
+
+	DirectX::SimpleMath::Matrix m_ballWorld[21];
 
 	std::unique_ptr<DebugCamera> m_camera;
 
-	std::unique_ptr<DirectX::Model>m_model;
+	std::unique_ptr<DirectX::Model>m_ground;
 	std::unique_ptr<DirectX::Model>m_sky;
+	std::unique_ptr<DirectX::Model>m_ball;
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
 
 };
