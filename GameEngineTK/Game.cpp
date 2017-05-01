@@ -42,8 +42,8 @@ void Game::Initialize(HWND window, int width, int height)
 	/*--以下に記述--*/
 
 	//行列初期化
-	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
-		Vector3::Zero, Vector3::UnitY);
+	m_view = Matrix::CreateLookAt(Vector3(0.0f, 140.0f, 0.0f),
+		Vector3::Zero, Vector3::UnitZ);
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
 		float(m_outputWidth) / float(m_outputHeight), 0.1f, 500.0f);
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
@@ -55,9 +55,31 @@ void Game::Initialize(HWND window, int width, int height)
 	m_effectFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
 	m_effectFactory->SetDirectory(L"Resources");
 
-	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground1.cmo", *m_effectFactory);
+	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
 	m_sky	= Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
 	m_ball = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ball.cmo", *m_effectFactory);
+
+
+
+	//テクスチャ読み込み
+	DirectX::CreateWICTextureFromFile(m_d3dDevice.Get(), L"Assets\\ground.png", nullptr, m_texture.ReleaseAndGetAddressOf());
+
+	//プリミティブバッチ作成
+	m_primitiveBatch = std::make_unique<DirectX::PrimitiveBatch<DirectX::VertexPositionTexture>>(m_d3dContext.Get());
+
+	//アルファエフェクト作成
+	m_alphaTestEffect = std::make_unique<DirectX::AlphaTestEffect>(m_d3dDevice.Get());
+	void const* shaderByteCode;
+	size_t byteCodeLength;
+	m_alphaTestEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
+
+	//インプットレイアウト作成
+	m_d3dDevice->CreateInputLayout(DirectX::VertexPositionTexture::InputElements,
+		DirectX::VertexPositionTexture::InputElementCount,
+		shaderByteCode,
+		byteCodeLength,
+		m_input.GetAddressOf());
+
 }
 
 // Executes the basic game loop.
@@ -89,7 +111,7 @@ void Game::Update(DX::StepTimer const& timer)
 
 	//回転用角度
 	static float angle;
-	angle += 0.1f;
+	angle += 1.5f;
 	if (angle >= 360.0f)
 	{
 		angle = 0.0f;
@@ -119,9 +141,19 @@ void Game::Update(DX::StepTimer const& timer)
 		//回転させる
 		Matrix rotate = Matrix::CreateRotationY(XMConvertToRadians(36.0f*(i % 10) + (angle * sign)));
 
+		Matrix scale;
+
+		if (i < 10)
+		{
+			scale = Matrix::CreateScale(1.5f);
+		}
+
 		//合算
-		m_ballWorld[i] = trans * rotate;
+		m_ballWorld[i] = scale * trans * rotate;
 	}
+
+	//ボス
+	m_ballWorld[20] *= Matrix::CreateScale(4.0f);
 }
 
 
@@ -139,16 +171,74 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	/*--以下に記述--*/
-	Matrix scale = Matrix::CreateScale(500.0f);
-	m_ground->Draw(m_d3dContext.Get(), *m_states, scale, m_view, m_proj);
+	
+
+	//空描画
 	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
 
+	//地面描画１
+	m_ground->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity , m_view, m_proj);
+
+	//地面描画２
+	//DrawGround();
+
+	//ボール描画
 	for (int i = 0; i < 21; i++)
 	{
 		m_ball->Draw(m_d3dContext.Get(), *m_states, m_ballWorld[i], m_view, m_proj);
 	}
 
     Present();
+}
+
+
+//＋ーーーーーーーーーーーーーー＋
+//｜機能  :地面の描画
+//｜引数  :なし(void)
+//｜戻り値:なし(void)
+//＋ーーーーーーーーーーーーーー＋
+void Game::DrawGround()
+{
+	//描画用座標
+	DirectX::VertexPositionTexture vertexes[4] =
+	{
+		{ DirectX::SimpleMath::Vector3(-0.5f, 0.0f,-0.5f),DirectX::SimpleMath::Vector2(0.0f,0.0f) },//左上
+		{ DirectX::SimpleMath::Vector3( 0.5f, 0.0f,-0.5f),DirectX::SimpleMath::Vector2(1.0f,0.0f) },//右上
+		{ DirectX::SimpleMath::Vector3(-0.5f, 0.0f, 0.5f),DirectX::SimpleMath::Vector2(0.0f,1.0f) },//左下
+		{ DirectX::SimpleMath::Vector3( 0.5f, 0.0f, 0.5f),DirectX::SimpleMath::Vector2(1.0f,1.0f) },//右下
+	};
+
+	uint16_t indexes[6] = { 0,1,2,1,3,2 };
+
+	//テクスチャを設定
+	m_alphaTestEffect->SetTexture(m_texture.Get());
+
+	//行列を設定
+	m_alphaTestEffect->SetView(m_view);
+	m_alphaTestEffect->SetProjection(m_proj);
+
+	for (int i = 0; i < 200; i++)
+	{
+		for (int j = 0; j < 200; j++)
+		{
+			Matrix world = Matrix::CreateTranslation(Vector3(1.0f*j-100.0f,0.0f,1.0f*i-100.0f));
+			m_alphaTestEffect->SetWorld(world);
+			m_alphaTestEffect->Apply(m_d3dContext.Get());
+			m_d3dContext->IASetInputLayout(m_input.Get());
+
+
+			m_primitiveBatch->Begin();
+			m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, 6, vertexes, 4);
+			m_primitiveBatch->End();
+
+		}
+	}
+
+
+	//描画設定
+	//m_context->OMSetBlendState(m_state->Opaque(), nullptr, 0xFFFFFFFF);
+	//m_context->OMSetDepthStencilState(m_state->DepthNone(), 0);
+	//m_context->RSSetState(m_state->CullNone());
 }
 
 // Helper method to clear the back buffers.

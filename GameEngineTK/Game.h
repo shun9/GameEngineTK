@@ -11,6 +11,7 @@
 #include <Model.h>
 #include "StepTimer.h"
 #include "DebugCamera.h"
+#include <WICTextureLoader.h>
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -85,5 +86,22 @@ private:
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
 	//ステート
 	std::unique_ptr<DirectX::CommonStates> m_states;
+
+
+
+	//プリミティブバッチ
+	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionTexture>> m_primitiveBatch;
+	//エフェクト
+	std::unique_ptr<DirectX::AlphaTestEffect> m_alphaTestEffect;
+	//インプットレイアウト
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_input;
+	//テクスチャ
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
+	
+
+private:
+	//地面の描画
+	void DrawGround();
+
 
 };
