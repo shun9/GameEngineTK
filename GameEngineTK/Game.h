@@ -76,32 +76,22 @@ private:
 	DirectX::SimpleMath::Matrix m_view;				
 	DirectX::SimpleMath::Matrix m_proj;
 
-	DirectX::SimpleMath::Matrix m_ballWorld[21];
-
 	std::unique_ptr<DebugCamera> m_camera;
 
+	//モデル
 	std::unique_ptr<DirectX::Model>m_ground;
 	std::unique_ptr<DirectX::Model>m_sky;
-	std::unique_ptr<DirectX::Model>m_ball;
+	std::unique_ptr<DirectX::Model>m_teapot;
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
+
+	DirectX::SimpleMath::Matrix m_teapotWorld[20];
+	DirectX::SimpleMath::Vector3 m_teapotFirstPos[20];
+
 	//ステート
 	std::unique_ptr<DirectX::CommonStates> m_states;
 
-
-
-	//プリミティブバッチ
-	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionTexture>> m_primitiveBatch;
-	//エフェクト
-	std::unique_ptr<DirectX::AlphaTestEffect> m_alphaTestEffect;
-	//インプットレイアウト
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_input;
-	//テクスチャ
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
-	
-
 private:
-	//地面の描画
-	void DrawGround();
-
+	DirectX::SimpleMath::Vector3 Lerp(DirectX::SimpleMath::Vector3 startPosition, DirectX::SimpleMath::Vector3 targetPosition, float t);
+	float Linearity(float time);
 
 };

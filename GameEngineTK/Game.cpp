@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "Game.h"
+#include <ctime>
 
 extern void ExitGame();
 
@@ -55,31 +56,28 @@ void Game::Initialize(HWND window, int width, int height)
 	m_effectFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
 	m_effectFactory->SetDirectory(L"Resources");
 
+	//モデル読み込み
 	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
-	m_sky	= Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
-	m_ball = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ball.cmo", *m_effectFactory);
+	m_sky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
+	m_teapot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Teapot.cmo", *m_effectFactory);
 
 
+	srand((unsigned int)time(nullptr));
 
-	//テクスチャ読み込み
-	DirectX::CreateWICTextureFromFile(m_d3dDevice.Get(), L"Assets\\ground.png", nullptr, m_texture.ReleaseAndGetAddressOf());
+	//ティーポットランダム位置
+	//０～１００
+	//０～2PI
+	for (int i = 0; i < 20; i++)
+	{
+		float distance = static_cast<float>(std::rand() % 100);
+		float angle	 = static_cast<float>(std::rand()%360);
 
-	//プリミティブバッチ作成
-	m_primitiveBatch = std::make_unique<DirectX::PrimitiveBatch<DirectX::VertexPositionTexture>>(m_d3dContext.Get());
+		float x = (sinf(angle)) * distance;
+		float z = (cosf(angle)) * distance;
 
-	//アルファエフェクト作成
-	m_alphaTestEffect = std::make_unique<DirectX::AlphaTestEffect>(m_d3dDevice.Get());
-	void const* shaderByteCode;
-	size_t byteCodeLength;
-	m_alphaTestEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
-
-	//インプットレイアウト作成
-	m_d3dDevice->CreateInputLayout(DirectX::VertexPositionTexture::InputElements,
-		DirectX::VertexPositionTexture::InputElementCount,
-		shaderByteCode,
-		byteCodeLength,
-		m_input.GetAddressOf());
-
+		m_teapotFirstPos[i] = Vector3(x, 0.0f, z);
+		m_teapotWorld[i] = Matrix::CreateTranslation(m_teapotFirstPos[i]);
+	}
 }
 
 // Executes the basic game loop.
@@ -109,51 +107,97 @@ void Game::Update(DX::StepTimer const& timer)
 	//ビュー行列の更新
 	m_view = m_camera->GetCameraMatrix();
 
-	//回転用角度
-	static float angle;
-	angle += 1.5f;
+
+	////ロール
+	//Matrix rotateZ;
+
+	////ピッチ（仰角）
+	//Matrix rotateX;
+
+	////ヨー（方位角）
+	//Matrix rotateY;
+
+	//拡大率
+	static float scale = 0.0f;
+	scale += 0.01;
+
+	if (scale >= 360.0f)
+	{
+		scale = 0.0f;
+	}
+
+	//角度
+	static float angle = 0.0f;
+	angle += 0.1f;
 	if (angle >= 360.0f)
 	{
 		angle = 0.0f;
 	}
 
-	for (int i = 0; i < 21; i++)
+	//移動時間
+	static float time = 0.0f;
+	static bool isCongregate = true;
+
+	//集合したら解散し始める
+	if (time >= 1.0f)
 	{
-		//ロール
-		Matrix rotateZ;
+		isCongregate = false;
 
-		//ピッチ（仰角）
-		Matrix rotateX;
-
-		//ヨー（方位角）
-		Matrix rotateY;
-
-		//円状に配置
-		Matrix trans = Matrix::CreateTranslation(Vector3(20.0f*(2-(i/10)), 0.0f, 0.0f));
-		
-		//真ん中の列だけ逆回転させる
-		int sign = 1;
-		if (2 - (i / 10) == 1)
+		//位置を再決定
+		for (int i = 0; i < 20; i++)
 		{
-			sign *= -1;
+			float distance = static_cast<float>(std::rand() % 100);
+			float angle = static_cast<float>(std::rand() % 360);
+
+			float x = (sinf(angle)) * distance;
+			float z = (cosf(angle)) * distance;
+
+			m_teapotFirstPos[i] = Vector3(x, 0.0f, z);
 		}
-
-		//回転させる
-		Matrix rotate = Matrix::CreateRotationY(XMConvertToRadians(36.0f*(i % 10) + (angle * sign)));
-
-		Matrix scale;
-
-		if (i < 10)
-		{
-			scale = Matrix::CreateScale(1.5f);
-		}
-
-		//合算
-		m_ballWorld[i] = scale * trans * rotate;
 	}
 
-	//ボス
-	m_ballWorld[20] *= Matrix::CreateScale(4.0f);
+	//解散したら集合し始める
+	if (time <= 0.0f)
+	{
+		isCongregate = true;
+	}
+
+	//集合or解散
+	if (isCongregate)
+	{
+		time += 0.1f / 60.0f;
+	}
+	else
+	{
+		time -= 0.1f / 60.0f;
+	}
+
+	for (int i = 0; i < 20; i++)
+	{
+		m_teapotWorld[i] = Matrix::CreateRotationY(angle)
+			*Matrix::CreateScale((sinf(scale) + 1.0f)*2.0f + 1.0f)
+			*Matrix::CreateTranslation(Lerp(m_teapotFirstPos[i],Vector3(0.0f,0.0f,0.0f), time));
+	}
+}
+
+Vector3 Game::Lerp(Vector3 startPosition, Vector3 targetPosition, float t)
+{
+	Vector3 lerpPosition = Vector3(0.0f,0.0f,0.0f);
+
+	lerpPosition = (1 - Linearity(t)) * startPosition + Linearity(t) * targetPosition;
+
+	return lerpPosition;
+}
+
+
+//線形補間
+float Game::Linearity(float time)
+{
+	float vt = 0.0f;
+
+	vt = time;
+
+	return vt;
 }
 
 
@@ -176,70 +220,19 @@ void Game::Render()
 	//空描画
 	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
 
-	//地面描画１
+	//地面描画
 	m_ground->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity , m_view, m_proj);
 
-	//地面描画２
-	//DrawGround();
-
-	//ボール描画
-	for (int i = 0; i < 21; i++)
-	{
-		m_ball->Draw(m_d3dContext.Get(), *m_states, m_ballWorld[i], m_view, m_proj);
+	//ティーポット描画
+	for (int i = 0; i < 20; i++)
+	{		
+		m_teapot->Draw(m_d3dContext.Get(), *m_states, m_teapotWorld[i], m_view, m_proj);
 	}
-
-    Present();
+    
+	Present();
 }
 
 
-//＋ーーーーーーーーーーーーーー＋
-//｜機能  :地面の描画
-//｜引数  :なし(void)
-//｜戻り値:なし(void)
-//＋ーーーーーーーーーーーーーー＋
-void Game::DrawGround()
-{
-	//描画用座標
-	DirectX::VertexPositionTexture vertexes[4] =
-	{
-		{ DirectX::SimpleMath::Vector3(-0.5f, 0.0f,-0.5f),DirectX::SimpleMath::Vector2(0.0f,0.0f) },//左上
-		{ DirectX::SimpleMath::Vector3( 0.5f, 0.0f,-0.5f),DirectX::SimpleMath::Vector2(1.0f,0.0f) },//右上
-		{ DirectX::SimpleMath::Vector3(-0.5f, 0.0f, 0.5f),DirectX::SimpleMath::Vector2(0.0f,1.0f) },//左下
-		{ DirectX::SimpleMath::Vector3( 0.5f, 0.0f, 0.5f),DirectX::SimpleMath::Vector2(1.0f,1.0f) },//右下
-	};
-
-	uint16_t indexes[6] = { 0,1,2,1,3,2 };
-
-	//テクスチャを設定
-	m_alphaTestEffect->SetTexture(m_texture.Get());
-
-	//行列を設定
-	m_alphaTestEffect->SetView(m_view);
-	m_alphaTestEffect->SetProjection(m_proj);
-
-	for (int i = 0; i < 200; i++)
-	{
-		for (int j = 0; j < 200; j++)
-		{
-			Matrix world = Matrix::CreateTranslation(Vector3(1.0f*j-100.0f,0.0f,1.0f*i-100.0f));
-			m_alphaTestEffect->SetWorld(world);
-			m_alphaTestEffect->Apply(m_d3dContext.Get());
-			m_d3dContext->IASetInputLayout(m_input.Get());
-
-
-			m_primitiveBatch->Begin();
-			m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, 6, vertexes, 4);
-			m_primitiveBatch->End();
-
-		}
-	}
-
-
-	//描画設定
-	//m_context->OMSetBlendState(m_state->Opaque(), nullptr, 0xFFFFFFFF);
-	//m_context->OMSetDepthStencilState(m_state->DepthNone(), 0);
-	//m_context->RSSetState(m_state->CullNone());
-}
 
 // Helper method to clear the back buffers.
 //画面を塗りつぶす
