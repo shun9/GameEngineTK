@@ -89,7 +89,7 @@ private:
 
 	std::unique_ptr<DebugCamera> m_debugCamera;
 
-	std::unique_ptr<DirectX::Model>m_model;
+	std::unique_ptr<DirectX::Model>m_ground;
 	std::unique_ptr<DirectX::Model>m_sky;
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
 	std::unique_ptr<Camera> m_camera;

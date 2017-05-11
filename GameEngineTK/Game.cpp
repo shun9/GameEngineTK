@@ -57,7 +57,7 @@ void Game::Initialize(HWND window, int width, int height)
 	m_effectFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
 	m_effectFactory->SetDirectory(L"Resources");
 
-	m_model = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground1.cmo", *m_effectFactory);
+	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
 	m_sky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
 	m_robotFoot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Foot.cmo", *m_effectFactory);
 
@@ -95,29 +95,27 @@ void Game::Update(DX::StepTimer const& timer)
 	////ビュー行列の更新
 	//m_view = m_debugCamera->GetCameraMatrix();
 
-	//カメラ更新
-	m_camera->SetTargetPos(m_robotPos);
-	m_camera->Update();
-	
-	//行列設定ww
-	m_view = m_camera->GetView();
-	m_proj = m_camera->GetProj();
+	////カメラ更新
+	//m_camera->SetTargetPos(m_robotPos);
+	//m_camera->Update();
+	//
+	////行列設定
+	//m_view = m_camera->GetView();
+	//m_proj = m_camera->GetProj();
 
 
 	auto kb = m_key->GetState();
 
 	//移動距離
 	float length = 0.1f;
-
+	Vector3 spd(sin(m_angle)*length, 0.0f, cos(m_angle)*length);
 	if (kb.W)
 	{
-		m_robotPos.x -= sin(m_angle)*length;
-		m_robotPos.z -= cos(m_angle)*length;
+		m_robotPos -= spd;
 	}
 	if (kb.S)
 	{
-		m_robotPos.x += sin(m_angle)*length;
-		m_robotPos.z += cos(m_angle)*length;
+		m_robotPos += spd;
 	}
 
 	if (kb.A)
@@ -130,6 +128,17 @@ void Game::Update(DX::StepTimer const& timer)
 	}
 
 	m_robotWorld = Matrix::CreateRotationY(m_angle)*Matrix::CreateTranslation(m_robotPos);
+
+	//カメラ更新
+	m_camera->SetTargetPos(m_robotPos - spd * 10.0f);
+	m_camera->SetEyePos(m_robotPos + spd * 20.0f+Vector3(0.0f,1.0f,0.0f));
+
+	m_camera->Update();
+
+	//行列設定
+	m_view = m_camera->GetView();
+	m_proj = m_camera->GetProj();
+
 }
 
 
@@ -147,8 +156,8 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	/*--以下に記述--*/
-	Matrix world = Matrix::CreateScale(10000.0f)*Matrix::CreateTranslation(Vector3(0.0f, -1.0f, 0.0f));
-	m_model->Draw(m_d3dContext.Get(), *m_states, world, m_view, m_proj);
+	Matrix world = Matrix::CreateTranslation(Vector3(0.0f, -1.0f, 0.0f));
+	m_ground->Draw(m_d3dContext.Get(), *m_states, world, m_view, m_proj);
 	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
 	m_robotFoot->Draw(m_d3dContext.Get(), *m_states, m_robotWorld, m_view, m_proj);
 
