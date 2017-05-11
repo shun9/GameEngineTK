@@ -3,14 +3,14 @@
 //
 
 #pragma once
-#include <PrimitiveBatch.h>
-#include <VertexTypes.h>
 #include <Effects.h>
 #include <CommonStates.h>
 #include <SimpleMath.h>
 #include <Model.h>
+#include <Keyboard.h>
 #include "StepTimer.h"
 #include "DebugCamera.h"
+#include "Camera.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -69,25 +69,28 @@ private:
     DX::StepTimer                                   m_timer;
 
 private:
+
+	//キーボード
+	std::unique_ptr<DirectX::Keyboard>m_key;
+	
 	//ステート
 	std::unique_ptr<DirectX::CommonStates> m_states;
-	//プリミティブバッチ
-	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionNormal>>m_batch;
-	//エフェクト
-	std::unique_ptr<DirectX::BasicEffect>m_effect;
 
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>m_inputLayout;
-
+	//ロボット関連
+	std::unique_ptr<DirectX::Model>m_robotFoot;
+	DirectX::SimpleMath::Matrix m_robotWorld;
+	DirectX::SimpleMath::Vector3 m_robotPos;
+	float m_angle;
 
 	//各種行列
-	DirectX::SimpleMath::Matrix m_world;	
+	DirectX::SimpleMath::Matrix m_world;
 	DirectX::SimpleMath::Matrix m_view;				
 	DirectX::SimpleMath::Matrix m_proj;	
 
-	std::unique_ptr<DebugCamera> m_camera;
+	std::unique_ptr<DebugCamera> m_debugCamera;
 
 	std::unique_ptr<DirectX::Model>m_model;
 	std::unique_ptr<DirectX::Model>m_sky;
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
-
+	std::unique_ptr<Camera> m_camera;
 };

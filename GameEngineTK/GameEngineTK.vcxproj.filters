@@ -16,12 +16,18 @@
     <ClInclude Include="DebugCamera.h">
       <Filter>Camera</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="DebugCamera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
   </ItemGroup>
@@ -43,6 +49,9 @@
       <Filter>Assets</Filter>
     </MeshContentTask>
     <MeshContentTask Include="Assets\Sky1.FBX">
+      <Filter>Assets</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Assets\Foot.FBX">
       <Filter>Assets</Filter>
     </MeshContentTask>
   </ItemGroup>

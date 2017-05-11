@@ -161,12 +161,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DebugCamera.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="StepTimer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DebugCamera.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -192,6 +194,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <MeshContentTask Include="Assets\Foot.FBX" />
     <MeshContentTask Include="Assets\Ground1.FBX" />
     <MeshContentTask Include="Assets\Sky1.FBX" />
   </ItemGroup>

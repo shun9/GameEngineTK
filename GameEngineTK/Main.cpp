@@ -4,7 +4,7 @@
 
 #include "pch.h"
 #include "Game.h"
-
+#include <Keyboard.h>
 using namespace DirectX;
 
 namespace
@@ -176,8 +176,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-    case WM_ACTIVATEAPP:
-        if (game)
+	case WM_ACTIVATEAPP:
+		Keyboard::ProcessMessage(message, wParam, lParam);
+		if (game)
         {
             if (wParam)
             {
@@ -210,12 +211,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		Keyboard::ProcessMessage(message, wParam, lParam);
+		break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
 
     case WM_SYSKEYDOWN:
-        if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
+		Keyboard::ProcessMessage(message, wParam, lParam);
+		if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
         {
             // Implements the classic ALT+ENTER fullscreen toggle
             if (s_fullscreen)

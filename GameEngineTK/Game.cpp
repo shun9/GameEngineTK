@@ -41,38 +41,17 @@ void Game::Initialize(HWND window, int width, int height)
     */
 	/*--以下に記述--*/
 
-	m_batch = std::make_unique<PrimitiveBatch<VertexPositionNormal>>(m_d3dContext.Get());
-
-	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
-	m_effect->SetProjection(XMMatrixOrthographicOffCenterRH(0,
-		width, height, 0.0f, 0.0f, 1.0f));
-	m_effect->SetVertexColorEnabled(true);
-
-	void const* shaderByteCode;
-	size_t byteCodeLength;
-
-	m_effect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
-
-	m_d3dDevice->CreateInputLayout(VertexPositionColor::InputElements,
-								   VertexPositionColor::InputElementCount,
-								   shaderByteCode, byteCodeLength,
-								   m_inputLayout.GetAddressOf());
-
-
+	m_key = std::make_unique<Keyboard>();
 
 	//行列初期化
 	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
 		Vector3::Zero, Vector3::UnitY);
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
 		float(m_outputWidth) / float(m_outputHeight), 0.1f, 1000.0f);
-	m_effect->SetView(m_view);
-	m_effect->SetProjection(m_proj);
-	m_effect->Apply(m_d3dContext.Get());
-	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 
 	//カメラ生成
-	m_camera = std::make_unique<DebugCamera>(m_outputWidth, m_outputHeight);
+	m_debugCamera = std::make_unique<DebugCamera>(m_outputWidth, m_outputHeight);
 
 	//エフェクトファクトリー生成
 	m_effectFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
@@ -80,6 +59,14 @@ void Game::Initialize(HWND window, int width, int height)
 
 	m_model = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground1.cmo", *m_effectFactory);
 	m_sky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
+	m_robotFoot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Foot.cmo", *m_effectFactory);
+
+	m_angle = 0.0f;
+
+	//カメラ生成
+	m_camera = std::make_unique<Camera>();
+	m_camera->SetEyePos(Vector3(0.0f, 2.0f, 2.0f));
+	m_camera->SetTargetPos(m_robotPos);
 }
 
 // Executes the basic game loop.
@@ -103,11 +90,46 @@ void Game::Update(DX::StepTimer const& timer)
 	/*--以下に記述--*/
 	elapsedTime;
 	
-	//カメラ更新
-	m_camera->Update();
+	////カメラ更新
+	//m_debugCamera->Update();
+	////ビュー行列の更新
+	//m_view = m_debugCamera->GetCameraMatrix();
 
-	//ビュー行列の更新
-	m_view = m_camera->GetCameraMatrix();
+	//カメラ更新
+	m_camera->SetTargetPos(m_robotPos);
+	m_camera->Update();
+	
+	//行列設定ww
+	m_view = m_camera->GetView();
+	m_proj = m_camera->GetProj();
+
+
+	auto kb = m_key->GetState();
+
+	//移動距離
+	float length = 0.1f;
+
+	if (kb.W)
+	{
+		m_robotPos.x -= sin(m_angle)*length;
+		m_robotPos.z -= cos(m_angle)*length;
+	}
+	if (kb.S)
+	{
+		m_robotPos.x += sin(m_angle)*length;
+		m_robotPos.z += cos(m_angle)*length;
+	}
+
+	if (kb.A)
+	{
+		m_angle += 0.1f;
+	}
+	if (kb.D)
+	{
+		m_angle -= 0.1f;
+	}
+
+	m_robotWorld = Matrix::CreateRotationY(m_angle)*Matrix::CreateTranslation(m_robotPos);
 }
 
 
@@ -127,99 +149,11 @@ void Game::Render()
 	/*--以下に記述--*/
 	Matrix world = Matrix::CreateScale(10000.0f)*Matrix::CreateTranslation(Vector3(0.0f, -1.0f, 0.0f));
 	m_model->Draw(m_d3dContext.Get(), *m_states, world, m_view, m_proj);
-	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity , m_view, m_proj);
+	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
+	m_robotFoot->Draw(m_d3dContext.Get(), *m_states, m_robotWorld, m_view, m_proj);
 
 	
-	m_effect->SetView(m_view);
-	m_effect->SetProjection(m_proj);
-	m_effect->Apply(m_d3dContext.Get());
-	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 
-
-	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
-	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
-	m_d3dContext->RSSetState(m_states->Wireframe());
-
-	VertexPositionNormal vertices[] =
-	{
-		{ Vector3(1.0f, -1.0f, -1.0f),Vector3(0.0f, -1.0f, 0.0f) },
-		{ Vector3(-1.0f, -1.0f, -1.0f),Vector3(0.0f, -1.0f, 0.0f) },
-		{ Vector3(-1.0f, -1.0f,  1.0f),Vector3(0.0f, -1.0f, 0.0f) },
-		{ Vector3(1.0f, -1.0f,  1.0f) ,Vector3(0.0f, -1.0f, 0.0f) },
-
-		{ Vector3(1.0f,  1.0f, -1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
-		{ Vector3(-1.0f, 1.0f, -1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
-		{ Vector3(-1.0f, 1.0f,  1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
-		{ Vector3(1.0f,  1.0f,  1.0f) ,Vector3(0.0f, 1.0f, 0.0f) },
-	};
-
-	uint16_t indices[] =
-	{
-		1,0,3,
-		1,2,3,
-		2,6,3,
-		3,6,7,
-		0,3,7,
-		0,7,4,
-		0,5,4,
-		0,1,5,
-		1,5,2,
-		2,5,6,
-		4,5,6,
-		4,6,7
-	};
-
-
-	m_batch->Begin();
-
-	m_batch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices, 36, vertices, 8);
-
-
-	//VertexPositionColor v1(Vector3(0.f, 0.5f, 0.5f), Colors::Yellow);
-	//VertexPositionColor v2(Vector3(0.5f, -0.5f, 0.5f), Colors::Yellow);
-	//VertexPositionColor v3(Vector3(-0.5f, -0.5f, 0.5f), Colors::Yellow);
-
-	//m_batch->DrawTriangle(v1, v2, v3);
-
-	//Vector4 color = Vector4{ 0.0f,0.0f,0.0f,0.0f };
-
-
-	////底面
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
-	//				  VertexPositionColor(g_vertex[1], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
-	//				  VertexPositionColor(g_vertex[2], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
-	//				  VertexPositionColor(g_vertex[3], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
-	//				  VertexPositionColor(g_vertex[0], color));
-	////上面
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[4], color),
-	//				  VertexPositionColor(g_vertex[5], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[5], color),
-	//				  VertexPositionColor(g_vertex[6], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[6], color),
-	//				  VertexPositionColor(g_vertex[7], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[7], color),
-	//				  VertexPositionColor(g_vertex[4], color));
-	////縦線
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[0], color),
-	//				  VertexPositionColor(g_vertex[4], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[1], color),
-	//				  VertexPositionColor(g_vertex[5], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[2], color),
-	//				  VertexPositionColor(g_vertex[6], color));
-	//m_batch->DrawLine(VertexPositionColor(g_vertex[3], color),
-	//				  VertexPositionColor(g_vertex[7], color));
-
-	m_batch->End();
-
-
-	m_batch->Begin();
-
-	m_batch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices, 36, vertices, 8);
-
-	m_batch->End();
 
     Present();
 }
