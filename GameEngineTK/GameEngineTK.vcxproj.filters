@@ -19,6 +19,9 @@
     <ClInclude Include="Camera.h">
       <Filter>Camera</Filter>
     </ClInclude>
+    <ClInclude Include="FollowCamera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -28,6 +31,9 @@
       <Filter>Camera</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="FollowCamera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
   </ItemGroup>

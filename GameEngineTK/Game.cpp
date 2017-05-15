@@ -64,9 +64,10 @@ void Game::Initialize(HWND window, int width, int height)
 	m_angle = 0.0f;
 
 	//カメラ生成
-	m_camera = std::make_unique<Camera>();
-	m_camera->SetEyePos(Vector3(0.0f, 2.0f, 2.0f));
+	m_camera = std::make_unique<FollowCamera>();
+	//m_camera->SetEyePos(Vector3(0.0f, 2.0f, 2.0f));
 	m_camera->SetTargetPos(m_robotPos);
+	m_camera->SetAngle(m_angle);
 }
 
 // Executes the basic game loop.
@@ -97,11 +98,13 @@ void Game::Update(DX::StepTimer const& timer)
 
 	////カメラ更新
 	//m_camera->SetTargetPos(m_robotPos);
-	//m_camera->Update();
-	//
-	////行列設定
-	//m_view = m_camera->GetView();
-	//m_proj = m_camera->GetProj();
+	m_camera->SetTargetPos(m_robotPos);
+	m_camera->SetAngle(m_angle);
+	m_camera->Update();
+	
+	//行列設定
+	m_view = m_camera->GetView();
+	m_proj = m_camera->GetProj();
 
 
 	auto kb = m_key->GetState();
@@ -109,35 +112,12 @@ void Game::Update(DX::StepTimer const& timer)
 	//移動距離
 	float length = 0.1f;
 	Vector3 spd(sin(m_angle)*length, 0.0f, cos(m_angle)*length);
-	if (kb.W)
-	{
-		m_robotPos -= spd;
-	}
-	if (kb.S)
-	{
-		m_robotPos += spd;
-	}
-
-	if (kb.A)
-	{
-		m_angle += 0.1f;
-	}
-	if (kb.D)
-	{
-		m_angle -= 0.1f;
-	}
+	if (kb.W){	m_robotPos -= spd;}
+	if (kb.S){	m_robotPos += spd;}
+	if (kb.A){	m_angle += 0.1f;}
+	if (kb.D){	m_angle -= 0.1f;}
 
 	m_robotWorld = Matrix::CreateRotationY(m_angle)*Matrix::CreateTranslation(m_robotPos);
-
-	//カメラ更新
-	m_camera->SetTargetPos(m_robotPos - spd * 10.0f);
-	m_camera->SetEyePos(m_robotPos + spd * 20.0f+Vector3(0.0f,1.0f,0.0f));
-
-	m_camera->Update();
-
-	//行列設定
-	m_view = m_camera->GetView();
-	m_proj = m_camera->GetProj();
 
 }
 
