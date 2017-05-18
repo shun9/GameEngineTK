@@ -65,9 +65,9 @@ void Game::Initialize(HWND window, int width, int height)
 
 	//カメラ生成
 	m_camera = std::make_unique<FollowCamera>();
-	//m_camera->SetEyePos(Vector3(0.0f, 2.0f, 2.0f));
 	m_camera->SetTargetPos(m_robotPos);
 	m_camera->SetAngle(m_angle);
+	m_camera->SetKeyboard(m_key.get());
 }
 
 // Executes the basic game loop.
@@ -90,14 +90,8 @@ void Game::Update(DX::StepTimer const& timer)
     // TODO: Add your game logic here.
 	/*--以下に記述--*/
 	elapsedTime;
-	
-	////カメラ更新
-	//m_debugCamera->Update();
-	////ビュー行列の更新
-	//m_view = m_debugCamera->GetCameraMatrix();
 
-	////カメラ更新
-	//m_camera->SetTargetPos(m_robotPos);
+	//カメラ更新
 	m_camera->SetTargetPos(m_robotPos);
 	m_camera->SetAngle(m_angle);
 	m_camera->Update();
@@ -114,8 +108,8 @@ void Game::Update(DX::StepTimer const& timer)
 	Vector3 spd(sin(m_angle)*length, 0.0f, cos(m_angle)*length);
 	if (kb.W){	m_robotPos -= spd;}
 	if (kb.S){	m_robotPos += spd;}
-	if (kb.A){	m_angle += 0.1f;}
-	if (kb.D){	m_angle -= 0.1f;}
+	if (kb.A){	m_angle += 0.03f;}
+	if (kb.D){	m_angle -= 0.03f;}
 
 	m_robotWorld = Matrix::CreateRotationY(m_angle)*Matrix::CreateTranslation(m_robotPos);
 
