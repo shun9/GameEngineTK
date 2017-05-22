@@ -8,10 +8,12 @@
 #include <SimpleMath.h>
 #include <Model.h>
 #include <Keyboard.h>
+#include <vector>
 #include "StepTimer.h"
 #include "DebugCamera.h"
 //#include "Camera.h"
 #include "FollowCamera.h"
+#include "Obj3d.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -78,9 +80,11 @@ private:
 	std::unique_ptr<DirectX::CommonStates> m_states;
 
 	//ロボット関連
-	std::unique_ptr<DirectX::Model>m_robotFoot;
 	DirectX::SimpleMath::Matrix m_robotWorld;
+	DirectX::SimpleMath::Matrix m_robotWorld2;
 	DirectX::SimpleMath::Vector3 m_robotPos;
+	
+	//向いている方向
 	float m_angle;
 
 	//各種行列
@@ -94,4 +98,5 @@ private:
 	std::unique_ptr<DirectX::Model>m_sky;
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
 	std::unique_ptr<FollowCamera> m_camera;
+	std::vector<Obj3d>m_robot;
 };

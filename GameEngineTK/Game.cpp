@@ -59,15 +59,17 @@ void Game::Initialize(HWND window, int width, int height)
 
 	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
 	m_sky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
-	m_robotFoot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Foot.cmo", *m_effectFactory);
-
-	m_angle = 0.0f;
-
+	//m_robotFoot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Foot.cmo", *m_effectFactory);
+	
 	//ÉJÉÅÉâê∂ê¨
 	m_camera = std::make_unique<FollowCamera>();
 	m_camera->SetTargetPos(m_robotPos);
 	m_camera->SetAngle(m_angle);
 	m_camera->SetKeyboard(m_key.get());
+
+	//Obj3d::InitStatic(m_camera, m_d3dDevice, m_d3dContext);
+	m_angle = 0.0f;
+
 }
 
 // Executes the basic game loop.
@@ -112,6 +114,7 @@ void Game::Update(DX::StepTimer const& timer)
 	if (kb.D){	m_angle -= 0.03f;}
 
 	m_robotWorld = Matrix::CreateRotationY(m_angle)*Matrix::CreateTranslation(m_robotPos);
+	m_robotWorld2 = Matrix::CreateRotationZ(XMConvertToRadians(180.0f))*Matrix::CreateTranslation(Vector3(0.0f,1.0f,0.0f))*m_robotWorld;
 
 }
 
@@ -133,7 +136,8 @@ void Game::Render()
 	Matrix world = Matrix::CreateTranslation(Vector3(0.0f, -1.0f, 0.0f));
 	m_ground->Draw(m_d3dContext.Get(), *m_states, world, m_view, m_proj);
 	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
-	m_robotFoot->Draw(m_d3dContext.Get(), *m_states, m_robotWorld, m_view, m_proj);
+	//m_robotFoot->Draw(m_d3dContext.Get(), *m_states, m_robotWorld, m_view, m_proj);
+	//m_robotFoot->Draw(m_d3dContext.Get(), *m_states, m_robotWorld2, m_view, m_proj);
 
 	
 

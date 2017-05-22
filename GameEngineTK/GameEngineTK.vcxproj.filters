@@ -22,6 +22,7 @@
     <ClInclude Include="FollowCamera.h">
       <Filter>Camera</Filter>
     </ClInclude>
+    <ClInclude Include="Obj3d.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -36,6 +37,7 @@
     <ClCompile Include="FollowCamera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
+    <ClCompile Include="Obj3d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
