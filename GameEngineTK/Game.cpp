@@ -40,8 +40,15 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
 	/*--以下に記述--*/
-
+	//カメラ生成
 	m_key = std::make_unique<Keyboard>();
+	m_camera = std::make_unique<FollowCamera>();
+	m_camera->SetTargetPos(m_robotPos);
+	m_camera->SetAngle(m_angle);
+	m_camera->SetKeyboard(m_key.get());
+
+	Obj3d::InitStatic(m_camera.get(), m_d3dDevice, m_d3dContext);
+
 
 	//行列初期化
 	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
@@ -58,18 +65,21 @@ void Game::Initialize(HWND window, int width, int height)
 	m_effectFactory->SetDirectory(L"Resources");
 
 	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
-	m_sky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Sky1.cmo", *m_effectFactory);
+	m_sky = std::make_unique<Obj3d>();
+	m_sky->LoadModel(L"Resources\\Sky1.cmo");
 	//m_robotFoot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Foot.cmo", *m_effectFactory);
-	
-	//カメラ生成
-	m_camera = std::make_unique<FollowCamera>();
-	m_camera->SetTargetPos(m_robotPos);
-	m_camera->SetAngle(m_angle);
-	m_camera->SetKeyboard(m_key.get());
+
 
 	//Obj3d::InitStatic(m_camera, m_d3dDevice, m_d3dContext);
 	m_angle = 0.0f;
 
+	//ロボットの生成
+	m_robot.resize(PLAYER_PARTS_NUM);
+	m_robot[PLAYER_PARTS_HEAD].LoadModel(L"Resources\\Head.cmo");
+	m_robot[PLAYER_PARTS_CANNON].LoadModel(L"Resources\\Cannon.cmo");
+	m_robot[PLAYER_PARTS_BODY].LoadModel(L"Resources\\Body.cmo");
+	m_robot[PLAYER_PARTS_LEG].LoadModel(L"Resources\\Leg.cmo");
+	m_robot[PLAYER_PARTS_FOOT].LoadModel(L"Resources\\Foot.cmo");
 }
 
 // Executes the basic game loop.
@@ -97,7 +107,9 @@ void Game::Update(DX::StepTimer const& timer)
 	m_camera->SetTargetPos(m_robotPos);
 	m_camera->SetAngle(m_angle);
 	m_camera->Update();
-	
+
+	m_sky->Update();
+
 	//行列設定
 	m_view = m_camera->GetView();
 	m_proj = m_camera->GetProj();
@@ -135,11 +147,13 @@ void Game::Render()
 	/*--以下に記述--*/
 	Matrix world = Matrix::CreateTranslation(Vector3(0.0f, -1.0f, 0.0f));
 	m_ground->Draw(m_d3dContext.Get(), *m_states, world, m_view, m_proj);
-	m_sky->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
-	//m_robotFoot->Draw(m_d3dContext.Get(), *m_states, m_robotWorld, m_view, m_proj);
-	//m_robotFoot->Draw(m_d3dContext.Get(), *m_states, m_robotWorld2, m_view, m_proj);
 
-	
+	m_sky->Render();
+
+	for (int i = 0; i < PLAYER_PARTS_NUM; i++)
+	{
+		m_robot[i].Render();
+	}
 
 
     Present();
@@ -331,7 +345,7 @@ void Game::CreateResources()
             // If the device was removed for any reason, a new device and swap chain will need to be created.
             OnDeviceLost();
 
-            // Everything is set up now. Do not continue execution of this method. OnDeviceLost will reenter this method 
+            // Everything is set up now. Do not continue execution of this method. OnDeviceLost will reenter this method
             // and correctly set up the new device.
             return;
         }

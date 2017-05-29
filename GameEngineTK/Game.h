@@ -20,6 +20,16 @@
 class Game
 {
 public:
+	enum PLAYER_PARTS
+	{
+		PLAYER_PARTS_HEAD,	//頭
+		PLAYER_PARTS_CANNON,//大砲　
+		PLAYER_PARTS_BODY,	//胴体
+		PLAYER_PARTS_LEG,	//脚
+		PLAYER_PARTS_FOOT,	//足
+
+		PLAYER_PARTS_NUM,	//パーツの数
+	};
 
     Game();
 
@@ -75,7 +85,7 @@ private:
 
 	//キーボード
 	std::unique_ptr<DirectX::Keyboard>m_key;
-	
+
 	//ステート
 	std::unique_ptr<DirectX::CommonStates> m_states;
 
@@ -83,19 +93,19 @@ private:
 	DirectX::SimpleMath::Matrix m_robotWorld;
 	DirectX::SimpleMath::Matrix m_robotWorld2;
 	DirectX::SimpleMath::Vector3 m_robotPos;
-	
+
 	//向いている方向
 	float m_angle;
 
 	//各種行列
 	DirectX::SimpleMath::Matrix m_world;
-	DirectX::SimpleMath::Matrix m_view;				
-	DirectX::SimpleMath::Matrix m_proj;	
+	DirectX::SimpleMath::Matrix m_view;
+	DirectX::SimpleMath::Matrix m_proj;
 
 	std::unique_ptr<DebugCamera> m_debugCamera;
 
 	std::unique_ptr<DirectX::Model>m_ground;
-	std::unique_ptr<DirectX::Model>m_sky;
+	std::unique_ptr<Obj3d>m_sky;
 	std::unique_ptr<DirectX::EffectFactory>m_effectFactory;
 	std::unique_ptr<FollowCamera> m_camera;
 	std::vector<Obj3d>m_robot;
