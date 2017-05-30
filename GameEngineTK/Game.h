@@ -22,8 +22,9 @@ class Game
 public:
 	enum PLAYER_PARTS
 	{
+		PLAYER_PIVOT,
 		PLAYER_PARTS_HEAD,	//У™
-		PLAYER_PARTS_CANNON,//СеЦCБ@
+		PLAYER_PARTS_CANNON,//СеЦC
 		PLAYER_PARTS_BODY,	//УЈСћ
 		PLAYER_PARTS_LEG,	//Лr
 		PLAYER_PARTS_FOOT,	//СЂ

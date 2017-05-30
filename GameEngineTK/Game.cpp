@@ -67,19 +67,34 @@ void Game::Initialize(HWND window, int width, int height)
 	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
 	m_sky = std::make_unique<Obj3d>();
 	m_sky->LoadModel(L"Resources\\Sky1.cmo");
-	//m_robotFoot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Foot.cmo", *m_effectFactory);
 
-
-	//Obj3d::InitStatic(m_camera, m_d3dDevice, m_d3dContext);
-	m_angle = 0.0f;
 
 	//ロボットの生成
 	m_robot.resize(PLAYER_PARTS_NUM);
-	m_robot[PLAYER_PARTS_HEAD].LoadModel(L"Resources\\Head.cmo");
-	m_robot[PLAYER_PARTS_CANNON].LoadModel(L"Resources\\Cannon.cmo");
-	m_robot[PLAYER_PARTS_BODY].LoadModel(L"Resources\\Body.cmo");
-	m_robot[PLAYER_PARTS_LEG].LoadModel(L"Resources\\Leg.cmo");
-	m_robot[PLAYER_PARTS_FOOT].LoadModel(L"Resources\\Foot.cmo");
+	m_robot[PLAYER_PARTS_HEAD]  .LoadModel(L"Resources\\Head.cmo"       );
+	m_robot[PLAYER_PARTS_CANNON].LoadModel(L"Resources\\Cannon.cmo"     );
+	m_robot[PLAYER_PARTS_BODY]  .LoadModel(L"Resources\\Body.cmo"       );
+	m_robot[PLAYER_PARTS_LEG]   .LoadModel(L"Resources\\Leg.cmo"        );
+	m_robot[PLAYER_PARTS_FOOT]  .LoadModel(L"Resources\\Foot.cmo"       );
+
+	m_robot[PLAYER_PARTS_HEAD]  .SetParent(&m_robot[PLAYER_PARTS_CANNON]);
+	m_robot[PLAYER_PARTS_CANNON].SetParent(&m_robot[PLAYER_PARTS_BODY]  );
+	m_robot[PLAYER_PARTS_BODY]  .SetParent(&m_robot[PLAYER_PIVOT]       );
+	m_robot[PLAYER_PARTS_LEG]   .SetParent(&m_robot[PLAYER_PARTS_BODY]  );
+	m_robot[PLAYER_PARTS_FOOT]  .SetParent(&m_robot[PLAYER_PARTS_LEG]   );
+
+	m_robot[PLAYER_PARTS_HEAD]  .SetTrans(Vector3(0.0f, 1.0f, 0.0f      ));
+	m_robot[PLAYER_PARTS_CANNON].SetTrans(Vector3(0.0f, 1.0f, 0.0f      ));
+	m_robot[PLAYER_PARTS_BODY]  .SetTrans(Vector3(0.0f, 0.0f, 0.0f      ));
+	m_robot[PLAYER_PARTS_LEG]   .SetTrans(Vector3(0.0f, -1.0f, 0.0f     ));
+	m_robot[PLAYER_PARTS_FOOT]  .SetTrans(Vector3(0.0f, -1.0f, 0.0f     ));
+
+	m_robot[PLAYER_PARTS_HEAD]  .SetScale(Vector3(2.0f, 2.0f, 2.0f      ));
+	m_robot[PLAYER_PARTS_CANNON].SetScale(Vector3(1.0f, 1.0f, 1.0f      ));
+	m_robot[PLAYER_PARTS_BODY]  .SetScale(Vector3(1.0f, 1.0f, 1.0f      ));
+	m_robot[PLAYER_PARTS_LEG]   .SetScale(Vector3(1.0f, 1.0f, 1.0f     ));
+	m_robot[PLAYER_PARTS_FOOT]  .SetScale(Vector3(1.0f, 1.0f, 1.0f     ));
+
 }
 
 // Executes the basic game loop.
@@ -103,9 +118,10 @@ void Game::Update(DX::StepTimer const& timer)
 	/*--以下に記述--*/
 	elapsedTime;
 
+	m_robot[0].GetAngle();
 	//カメラ更新
-	m_camera->SetTargetPos(m_robotPos);
-	m_camera->SetAngle(m_angle);
+	m_camera->SetTargetPos(m_robot[0].GetTrans());
+	m_camera->SetAngle(XMConvertToRadians( m_robot[0].GetAngle().y));
 	m_camera->Update();
 
 	m_sky->Update();
@@ -119,14 +135,21 @@ void Game::Update(DX::StepTimer const& timer)
 
 	//移動距離
 	float length = 0.1f;
-	Vector3 spd(sin(m_angle)*length, 0.0f, cos(m_angle)*length);
-	if (kb.W){	m_robotPos -= spd;}
-	if (kb.S){	m_robotPos += spd;}
-	if (kb.A){	m_angle += 0.03f;}
-	if (kb.D){	m_angle -= 0.03f;}
+	Vector3 spd(sin(XMConvertToRadians(m_robot[0].GetAngle().y))*length, 0.0f, cos(XMConvertToRadians(m_robot[0].GetAngle().y))*length);
+	Vector3 pos = m_robot[0].GetTrans();
+	Vector3 angle = m_robot[0].GetAngle();
+	if (kb.W) { m_robot[0].SetTrans(pos - spd); }
+	if (kb.S) { m_robot[0].SetTrans(pos + spd); }
+	if (kb.A) { m_robot[0].SetAngle(angle + Vector3::UnitY); }
+	if (kb.D) { m_robot[0].SetAngle(angle - Vector3::UnitY); }
 
 	m_robotWorld = Matrix::CreateRotationY(m_angle)*Matrix::CreateTranslation(m_robotPos);
 	m_robotWorld2 = Matrix::CreateRotationZ(XMConvertToRadians(180.0f))*Matrix::CreateTranslation(Vector3(0.0f,1.0f,0.0f))*m_robotWorld;
+	std::vector<Obj3d>::iterator robotItr;
+	for (robotItr = m_robot.begin(); robotItr != m_robot.end(); robotItr++)
+	{
+		(*robotItr).Update();
+	}
 
 }
 

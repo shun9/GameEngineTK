@@ -47,10 +47,10 @@ void Obj3d::Update()
 	Matrix scale = Matrix::CreateScale(m_scale);
 
 	//âÒì]çsóÒ
-	Matrix rotateZ = Matrix::CreateRotationZ(m_angle.z);
-	Matrix rotateX= Matrix::CreateRotationX(m_angle.x);
-	Matrix rotateY = Matrix::CreateRotationY(m_angle.y);
-	Matrix rotate = rotateZ* rotateX* rotateY;
+	Matrix rotateZ = Matrix::CreateRotationZ(XMConvertToRadians( m_angle.z));
+	Matrix rotateX = Matrix::CreateRotationX(XMConvertToRadians(m_angle.x));
+	Matrix rotateY = Matrix::CreateRotationY(XMConvertToRadians(m_angle.y));
+	Matrix rotate  = rotateZ* rotateX* rotateY;
 
 	//ïΩçsà⁄ìÆçsóÒ
 	Matrix trance = Matrix::CreateTranslation(m_trance);
