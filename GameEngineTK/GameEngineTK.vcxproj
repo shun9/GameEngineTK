@@ -198,13 +198,17 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <MeshContentTask Include="Assets\Arm.FBX" />
     <MeshContentTask Include="Assets\Body.FBX" />
+    <MeshContentTask Include="Assets\BodyTop.FBX" />
     <MeshContentTask Include="Assets\Cannon.FBX" />
     <MeshContentTask Include="Assets\Foot.FBX" />
     <MeshContentTask Include="Assets\Ground1.FBX" />
     <MeshContentTask Include="Assets\Ground200.FBX" />
+    <MeshContentTask Include="Assets\Hand.FBX" />
     <MeshContentTask Include="Assets\Head.FBX" />
     <MeshContentTask Include="Assets\Leg.FBX" />
+    <MeshContentTask Include="Assets\Shield.FBX" />
     <MeshContentTask Include="Assets\Sky1.FBX" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

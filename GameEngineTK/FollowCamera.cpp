@@ -9,7 +9,7 @@ using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
 //カメラと自機の距離
-const float FollowCamera::CAMERA_DISTANSE = 5.0f;
+const float FollowCamera::CAMERA_DISTANSE = 8.0f;
 const bool FollowCamera::FPS = true;
 const bool FollowCamera::TPS = false;
 
@@ -50,13 +50,13 @@ void FollowCamera::InitiallizeTPS()
 //｜戻り値:なし(void)
 //＋ーーーーーーーーーーーーーー＋
 void FollowCamera::Update()
-{	
+{
 	//キーボードの状態を取得
 	DirectX::Keyboard::State keyState= m_keyboard->GetState();
 	m_keyTracker.Update(keyState);
 
 	//Cキーを押したらカメラの状態を切り替える
-	if (m_keyTracker.IsKeyPressed(Keyboard::Keyboard::C))
+	if (m_keyTracker.IsKeyPressed(Keyboard::Keyboard::Q))
 	{
 		//フラグ切替
 		m_cameraMode = !m_cameraMode;
@@ -80,11 +80,11 @@ void FollowCamera::Update()
 		Matrix rot = Matrix::CreateRotationY(m_targetAngle);
 		cameraV = Vector3::TransformNormal(cameraV, rot);
 		Vector3 eyePos = refPos + cameraV;
-		
+
 		m_eyePos = m_eyePos + (eyePos - m_eyePos)*0.05f;
 		m_refPos = m_refPos + (refPos - m_refPos)*0.2f;
 	}
-	
+
 	/*--FPSカメラ--*/
 	if (m_cameraMode == FPS)
 	{
@@ -96,7 +96,7 @@ void FollowCamera::Update()
 		//自機の後ろに回り込むための回転
 		Matrix rot = Matrix::CreateRotationY(m_targetAngle);
 		cameraV = Vector3::TransformNormal(cameraV, rot);
-		
+
 		Vector3 refPos = eyePos + cameraV;
 
 		m_refPos = refPos;
