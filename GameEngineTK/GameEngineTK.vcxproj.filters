@@ -8,6 +8,9 @@
     <Filter Include="Camera">
       <UniqueIdentifier>{4f5325d7-0cfe-4053-a4ff-0a4f0959873e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{03fec4f2-b812-4d52-94c7-c70972b6dfc8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -23,6 +26,28 @@
       <Filter>Camera</Filter>
     </ClInclude>
     <ClInclude Include="Obj3d.h" />
+    <ClInclude Include="Player\Player.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Player\PlayerState.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Player\States\StandingState.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Player\States\MoveState.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Player\States\DefenseState.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Player\States\ShortRangeAttackState.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Player\States\LongRangeAttackState.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyBoardManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -38,6 +63,25 @@
       <Filter>Camera</Filter>
     </ClCompile>
     <ClCompile Include="Obj3d.cpp" />
+    <ClCompile Include="Player\Player.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Player\States\StandingState.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Player\States\MoveState.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Player\States\DefenseState.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Player\States\ShortRangeAttackState.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Player\States\LongRangeAttackState.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyBoardManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

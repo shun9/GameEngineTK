@@ -4,6 +4,12 @@
 
 #include "pch.h"
 #include "Game.h"
+#include "KeyBoardManager.h"
+#include "Player\States\DefenseState.h"
+#include "Player\States\LongRangeAttackState.h"
+#include "Player\States\MoveState.h"
+#include "Player\States\ShortRangeAttackState.h"
+#include "Player\States\StandingState.h"
 
 extern void ExitGame();
 
@@ -41,12 +47,12 @@ void Game::Initialize(HWND window, int width, int height)
     */
 	/*--以下に記述--*/
 	//カメラ生成
-	m_key = std::make_unique<Keyboard>();
 	m_camera = std::make_unique<FollowCamera>();
-	m_camera->SetKeyboard(m_key.get());
+	m_camera->SetKeyboard(KeyBoardManager::GetInstance()->GetKeyBoard());
 
 	Obj3d::InitStatic(m_camera.get(), m_d3dDevice, m_d3dContext);
 
+	m_player = std::make_unique<Player>();
 
 	//行列初期化
 	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
@@ -65,92 +71,6 @@ void Game::Initialize(HWND window, int width, int height)
 	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
 	m_sky = std::make_unique<Obj3d>();
 	m_sky->LoadModel(L"Resources\\Sky1.cmo");
-
-	//ギミック用あれこれ
-	m_rotation = 1.0f;
-	m_headPos = 0.0f;
-	m_bigShieldCnt = 0;
-	m_shieldAttackCnt = 0;
-	m_isHeadShoot = false;
-	m_isBigShield = false;
-	m_isShieldAttack = false;
-	m_isShieldGimmic = false;
-
-	//ロボットの生成
-	m_robot.resize(PLAYER_PARTS_NUM);
-	m_robot[PLAYER_PARTS_HEAD]    .LoadModel(L"Resources\\Head.cmo"        );
-	m_robot[PLAYER_PARTS_BODYTOP] .LoadModel(L"Resources\\BodyTop.cmo"     );
-	m_robot[PLAYER_PARTS_BODY]    .LoadModel(L"Resources\\Body.cmo");
-	m_robot[PLAYER_PARTS_ARM_R]   .LoadModel(L"Resources\\Arm.cmo");
-	m_robot[PLAYER_PARTS_ARM_L]   .LoadModel(L"Resources\\Arm.cmo");
-	m_robot[PLAYER_PARTS_HAND_R]  .LoadModel(L"Resources\\Hand.cmo");
-	m_robot[PLAYER_PARTS_HAND_L]  .LoadModel(L"Resources\\Hand.cmo");
-	m_robot[PLAYER_PARTS_SHIELD_R].LoadModel(L"Resources\\Shield.cmo"      );
-	m_robot[PLAYER_PARTS_SHIELD_L].LoadModel(L"Resources\\Shield.cmo"      );
-	m_robot[PLAYER_PARTS_LEG]     .LoadModel(L"Resources\\Leg.cmo"         );
-	m_robot[PLAYER_PARTS_FOOT]    .LoadModel(L"Resources\\Foot.cmo"        );
-
-
-	//親の設定
-	m_robot[PLAYER_SHIELD_PIVOT]  .SetParent(&m_robot[PLAYER_PIVOT]);
-	m_robot[PLAYER_ARM_R_PIVOT]   .SetParent(&m_robot[PLAYER_PARTS_BODYTOP]);
-	m_robot[PLAYER_ARM_L_PIVOT]   .SetParent(&m_robot[PLAYER_PARTS_BODYTOP]);
-	m_robot[PLAYER_PARTS_HEAD]    .SetParent(&m_robot[PLAYER_PARTS_BODY]);
-	m_robot[PLAYER_PARTS_BODYTOP] .SetParent(&m_robot[PLAYER_PARTS_BODY]   );
-	m_robot[PLAYER_PARTS_BODY]    .SetParent(&m_robot[PLAYER_PIVOT]);
-	m_robot[PLAYER_PARTS_ARM_R]   .SetParent(&m_robot[PLAYER_ARM_R_PIVOT]);
-	m_robot[PLAYER_PARTS_ARM_L]   .SetParent(&m_robot[PLAYER_ARM_L_PIVOT]);
-	m_robot[PLAYER_PARTS_HAND_R]  .SetParent(&m_robot[PLAYER_PARTS_ARM_R]);
-	m_robot[PLAYER_PARTS_HAND_L]  .SetParent(&m_robot[PLAYER_PARTS_ARM_L]);
-	m_robot[PLAYER_PARTS_SHIELD_R].SetParent(&m_robot[PLAYER_SHIELD_PIVOT] );
-	m_robot[PLAYER_PARTS_SHIELD_L].SetParent(&m_robot[PLAYER_SHIELD_PIVOT] );
-	m_robot[PLAYER_PARTS_LEG]     .SetParent(&m_robot[PLAYER_PARTS_BODY]   );
-	m_robot[PLAYER_PARTS_FOOT]    .SetParent(&m_robot[PLAYER_PARTS_LEG]    );
-
-
-	//位置の設定
-	m_robot[PLAYER_SHIELD_PIVOT]  .SetTrans(Vector3(0.0f, 0.0f, 0.0f       ));
-	m_robot[PLAYER_ARM_R_PIVOT]   .SetTrans(Vector3(0.2f, 0.2f, 0.05f));
-	m_robot[PLAYER_ARM_L_PIVOT]   .SetTrans(Vector3(-0.2f, 0.2f, 0.05f));
-	m_robot[PLAYER_PARTS_HEAD]    .SetTrans(Vector3(0.0f, 0.72f,0.1f       ));
-	m_robot[PLAYER_PARTS_BODYTOP] .SetTrans(Vector3(0.0f, 0.37f,0.0f       ));
-	m_robot[PLAYER_PARTS_BODY]    .SetTrans(Vector3(0.0f, 0.5f, 0.0f));
-	m_robot[PLAYER_PARTS_ARM_R]   .SetTrans(Vector3(0.0f, 0.0f, 0.0f));
-	m_robot[PLAYER_PARTS_ARM_L]   .SetTrans(Vector3(0.0f, 0.0f, 0.0f));
-	m_robot[PLAYER_PARTS_HAND_R]  .SetTrans(Vector3(0.0f, 0.55f, 0.51f));
-	m_robot[PLAYER_PARTS_HAND_L]  .SetTrans(Vector3(0.0f, 0.55f, 0.51f));
-	m_robot[PLAYER_PARTS_SHIELD_R].SetTrans(Vector3(0.8f, 0.6f, 0.0f       ));
-	m_robot[PLAYER_PARTS_SHIELD_L].SetTrans(Vector3(-0.8f,0.6f, 0.0f       ));
-	m_robot[PLAYER_PARTS_LEG]     .SetTrans(Vector3(0.0f, -0.2f,0.02f      ));
-	m_robot[PLAYER_PARTS_FOOT]    .SetTrans(Vector3(0.0f, -0.25f, 0.0f     ));
-
-
-	//拡大率設定
-	m_robot[PLAYER_SHIELD_PIVOT]  .SetScale(Vector3(1.2f, 1.2f, 1.2f       ));
-	m_robot[PLAYER_PARTS_HEAD]    .SetScale(Vector3(1.6f, 2.0f, 1.6f       ));
-	m_robot[PLAYER_PARTS_BODYTOP] .SetScale(Vector3(1.0f, 0.9f, 1.0f       ));
-	m_robot[PLAYER_PARTS_BODY]    .SetScale(Vector3(1.5f, 1.5f, 1.5f       ));
-	m_robot[PLAYER_PARTS_SHIELD_R].SetScale(Vector3(1.0f, 1.0f, 1.0f       ));
-	m_robot[PLAYER_PARTS_SHIELD_L].SetScale(Vector3(1.0f, 1.0f, 1.0f       ));
-	m_robot[PLAYER_PARTS_LEG]     .SetScale(Vector3(1.0f, 1.0f, 1.0f       ));
-	m_robot[PLAYER_PARTS_FOOT]    .SetScale(Vector3(0.7f, 0.7f, 0.7f       ));
-
-
-	//角度設定
-	m_robot[PLAYER_PARTS_HEAD]    .SetAngle(Vector3(20.0f, 0.0f, 0.0f      ));
-	m_robot[PLAYER_PARTS_BODYTOP] .SetAngle(Vector3(-5.0f, 0.0f, 0.0f      ));
-	m_robot[PLAYER_PARTS_SHIELD_L].SetAngle(Vector3(0.0f, 180.0f, 0.0f     ));
-	m_robot[PLAYER_PARTS_ARM_R].SetAngle(Vector3(150.0f, 0.0f, -10.0f));
-	m_robot[PLAYER_PARTS_ARM_L].SetAngle(Vector3(150.0f, 0.0f, 10.0f));
-	m_robot[PLAYER_PARTS_HAND_R].SetAngle(Vector3(135.0f, 0.0f, 0.0f));
-	m_robot[PLAYER_PARTS_HAND_L].SetAngle(Vector3(135.0f, 0.0f, 0.0f));
-
-	//初期位置を保存しておく
-	std::vector<Obj3d>::iterator robotItr;
-	for (robotItr = m_robot.begin(); robotItr != m_robot.end(); robotItr++)
-	{
-		m_robotStartPos.push_back(Vector3((*robotItr).GetTrans()));
-	}
 }
 
 // Executes the basic game loop.
@@ -174,10 +94,8 @@ void Game::Update(DX::StepTimer const& timer)
 	/*--以下に記述--*/
 	elapsedTime;
 
-	m_robot[0].GetAngle();
 	//カメラ更新
-	m_camera->SetTargetPos(m_robot[0].GetTrans());
-	//m_camera->SetAngle(XMConvertToRadians(m_robot[0].GetAngle().y));
+	m_camera->SetTargetPos(m_player->GetTrans());
 	m_camera->SetAngle(0.0f);
 	m_camera->Update();
 
@@ -187,27 +105,10 @@ void Game::Update(DX::StepTimer const& timer)
 	m_view = m_camera->GetView();
 	m_proj = m_camera->GetProj();
 
+	auto key = KeyBoardManager::GetInstance()->GetKeyBoard();
 
-	auto kb = m_key->GetState();
 
-	//ロボットのギミック
-	GimmicRobot();
-
-	//移動距離
-	float length = 0.1f;
-	Vector3 spd(sin(XMConvertToRadians(m_robot[0].GetAngle().y))*length, 0.0f, cos(XMConvertToRadians(m_robot[0].GetAngle().y))*length);
-	Vector3 pos = m_robot[0].GetTrans();
-	Vector3 angle = m_robot[0].GetAngle();
-	if (kb.W) { m_robot[0].SetTrans(pos - spd); }
-	if (kb.S) { m_robot[0].SetTrans(pos + spd); }
-	if (kb.A) { m_robot[0].SetAngle(angle + Vector3::UnitY); }
-	if (kb.D) { m_robot[0].SetAngle(angle - Vector3::UnitY); }
-
-	std::vector<Obj3d>::iterator robotItr;
-	for (robotItr = m_robot.begin(); robotItr != m_robot.end(); robotItr++)
-	{
-		(*robotItr).Update();
-	}
+	m_player->Update();
 }
 
 
@@ -230,11 +131,7 @@ void Game::Render()
 
 	m_sky->Render();
 
-	for (int i = 0; i < PLAYER_PARTS_NUM; i++)
-	{
-		m_robot[i].Render();
-	}
-
+	m_player->Render();
 
     Present();
 }
@@ -521,6 +418,12 @@ void Game::CreateResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
+	KeyBoardManager::DeleteInstance();
+	DefenseState::DeleteInstance();
+	LongRangeAttackState::DeleteInstance();
+	MovingState::DeleteInstance();
+	ShortRangeAttackState::DeleteInstance();
+	StandingState::DeleteInstance();
 
     m_depthStencilView.Reset();
     m_renderTargetView.Reset();
@@ -534,213 +437,4 @@ void Game::OnDeviceLost()
     CreateDevice();
 
     CreateResources();
-}
-
-//ロボットギミック
-void Game::GimmicRobot()
-{
-	//通常時のギミック
-	NormalState();
-
-	//Zキーで頭飛ばし
-	HeadShoot();
-
-	//Xキーで防御態勢
-	BigShield();
-
-	//Cキーで盾攻撃
-	ShieldAttack();
-}
-
-//通常時のギミック
-void Game::NormalState()
-{
-	auto kb = m_key->GetState();
-
-	//本体が回転しているときの調整用倍率
-	float magnification = 1.0f;
-	if (kb.A) { magnification = 0.5f; }
-	if (kb.D) { magnification = 2.0f; }
-	m_rotation = magnification;
-
-	//盾の回転
-	Vector3 angle = m_robot[PLAYER_SHIELD_PIVOT].GetAngle();
-	angle.y += m_rotation;
-	m_robot[PLAYER_SHIELD_PIVOT].SetAngle(angle);
-
-	//脚の回転
-	angle = m_robot[PLAYER_PARTS_LEG].GetAngle();
-	angle.y += m_rotation * 2;
-	m_robot[PLAYER_PARTS_LEG].SetAngle(angle);
-
-	//足の回転
-	angle = m_robot[PLAYER_PARTS_FOOT].GetAngle();
-	angle.y += -(m_rotation * 3);
-	m_robot[PLAYER_PARTS_FOOT].SetAngle(angle);
-
-}
-
-//防御態勢
-void Game::BigShield()
-{
-	auto kb = m_key->GetState();
-
-	if (kb.X) {
-		if (!m_isBigShield && !m_isShieldGimmic)
-		{
-			m_isBigShield = true;
-			m_bigShieldCnt = 0;
-			m_isShieldGimmic = true;
-		}
-	}
-
-	if (m_isBigShield)
-	{
-		m_bigShieldCnt++;
-
-		//手を上げる
-		m_robot[PLAYER_ARM_R_PIVOT].SetAngle(Vector3(std::min(150.0f, m_bigShieldCnt*10.0f), 0.0f, 0.0f));
-		m_robot[PLAYER_ARM_L_PIVOT].SetAngle(Vector3(std::min(150.0f, m_bigShieldCnt*10.0f), 0.0f, 0.0f));
-
-		//盾を拡大
-		m_robot[PLAYER_PARTS_SHIELD_R].SetScale(Vector3(1.5f, 1.5f, 1.5f));
-		m_robot[PLAYER_PARTS_SHIELD_L].SetScale(Vector3(1.5f, 1.5f, 1.5f));
-
-		m_robot[PLAYER_PARTS_SHIELD_R].SetTrans(Vector3(1.5f, 0.6f, 0.0f));
-		m_robot[PLAYER_PARTS_SHIELD_L].SetTrans(Vector3(-1.5f, 0.6f, 0.0f));
-
-		//盾の高速回転
-		Vector3 angle = m_robot[PLAYER_SHIELD_PIVOT].GetAngle();
-		angle.y += 15.0f;
-		m_robot[PLAYER_SHIELD_PIVOT].SetAngle(angle);
-
-		if (m_bigShieldCnt > 120)
-		{
-			//初期位置に戻す
-			m_robot[PLAYER_PARTS_SHIELD_R].SetScale(Vector3(1.0f, 1.0f, 1.0f));
-			m_robot[PLAYER_PARTS_SHIELD_L].SetScale(Vector3(1.0f, 1.0f, 1.0f));
-
-			m_robot[PLAYER_PARTS_SHIELD_R].SetTrans(m_robotStartPos[PLAYER_PARTS_SHIELD_R]);
-			m_robot[PLAYER_PARTS_SHIELD_L].SetTrans(m_robotStartPos[PLAYER_PARTS_SHIELD_L]);
-
-
-			m_robot[PLAYER_ARM_R_PIVOT].SetAngle(Vector3(0.0f, 0.0f, 0.0f));
-			m_robot[PLAYER_ARM_L_PIVOT].SetAngle(Vector3(0.0f, 0.0f, 0.0f));
-
-			m_isBigShield = false;
-			m_isShieldGimmic = false;
-		}
-	}
-}
-
-//頭打ち
-void Game::HeadShoot()
-{
-	auto kb = m_key->GetState();
-
-	if (kb.Z) {
-		if (!m_isHeadShoot)
-		{
-			m_isHeadShoot = true;
-			m_headPos = -5.0f;
-		}
-	}
-
-	if (m_isHeadShoot)
-	{
-		Vector3 pos = m_robot[PLAYER_PARTS_HEAD].GetTrans();
-		pos.y += -m_headPos / 20.0f;
-		pos.z += -0.3f;
-		m_robot[PLAYER_PARTS_HEAD].SetTrans(pos);
-		m_headPos += 0.1f;
-		if (m_headPos > 5.1f)
-		{
-			//初期位置に戻す
-			m_robot[PLAYER_PARTS_HEAD].SetTrans(m_robotStartPos[PLAYER_PARTS_HEAD]);
-
-			m_isHeadShoot = false;
-		}
-	}
-}
-
-//盾攻撃
-void Game::ShieldAttack()
-{
-	auto kb = m_key->GetState();
-
-	if (kb.C) {
-		if (!m_isShieldAttack && !m_isShieldGimmic)
-		{
-			m_isShieldAttack = true;
-			m_shieldAttackCnt = 0;
-			m_isShieldGimmic = true;
-		}
-	}
-
-	if (m_isShieldAttack)
-	{
-		m_shieldAttackCnt++;
-
-		//盾攻撃
-		m_robot[PLAYER_SHIELD_PIVOT].SetTrans(m_robotStartPos[PLAYER_SHIELD_PIVOT] + Vector3(0.0f, std::min(m_shieldAttackCnt / 30.0f*0.8f, 0.8f), 0.0f));
-		m_robot[PLAYER_SHIELD_PIVOT].SetAngle(Vector3(0.0f,0.0f,0.0f));
-
-		float shieldAngle = std::min(m_shieldAttackCnt / 30.0f*90.0f, 90.0f);
-		m_robot[PLAYER_PARTS_SHIELD_R].SetAngle(Vector3(shieldAngle, 0.0f, 0.0f));
-		m_robot[PLAYER_PARTS_SHIELD_L].SetAngle(Vector3(-shieldAngle, 180.0f, 0.0f));
-
-		Vector3 move;
-		Vector3 move2;
-		float armAngle = m_shieldAttackCnt*10.0f;
-		if (m_shieldAttackCnt < 20)
-		{
-			//手を上げる
-			m_robot[PLAYER_ARM_R_PIVOT].SetAngle(Vector3(std::min(150.0f, armAngle), 0.0f, 0.0f));
-			m_robot[PLAYER_ARM_L_PIVOT].SetAngle(Vector3(std::min(150.0f, armAngle), 0.0f, 0.0f));
-
-			move.x  =  0.01f;
-			move2.x = -0.01f;
-		}
-		else if(m_shieldAttackCnt < 35)
-		{
-			//手を前方に向ける
-			m_robot[PLAYER_ARM_R_PIVOT].SetAngle(Vector3(std::max(90.0f, 350.0f-armAngle), 0.0f, 0.0f));
-			m_robot[PLAYER_ARM_L_PIVOT].SetAngle(Vector3(std::max(90.0f, 350.0f - armAngle), 0.0f, 0.0f));
-
-			move.x  = -0.02f;
-			move2.x =  0.02f;
-			move.z  = -0.4f;
-			move2.z = -0.4f;
-		}
-		else
-		{
-			move.x  =  0.02f;
-			move2.x = -0.02f;
-			move.z  =  0.4f;
-			move2.z =  0.4f;
-		}
-
-		m_robot[PLAYER_PARTS_SHIELD_R].SetTrans(m_robot[PLAYER_PARTS_SHIELD_R].GetTrans() + move);
-		m_robot[PLAYER_PARTS_SHIELD_L].SetTrans(m_robot[PLAYER_PARTS_SHIELD_L].GetTrans() + move2);
-
-		if (m_shieldAttackCnt > 50)
-		{
-			//初期位置に戻す
-			m_robot[PLAYER_PARTS_SHIELD_R].SetScale(Vector3(1.0f, 1.0f, 1.0f));
-			m_robot[PLAYER_PARTS_SHIELD_L].SetScale(Vector3(1.0f, 1.0f, 1.0f));
-
-			m_robot[PLAYER_PARTS_SHIELD_R].SetTrans(m_robotStartPos[PLAYER_PARTS_SHIELD_R]);
-			m_robot[PLAYER_PARTS_SHIELD_L].SetTrans(m_robotStartPos[PLAYER_PARTS_SHIELD_L]);
-
-			m_robot[PLAYER_PARTS_SHIELD_R].SetAngle(Vector3(0.0f, 0.0f, 0.0f));
-			m_robot[PLAYER_PARTS_SHIELD_L].SetAngle(Vector3(0.0f, 180.0f, 0.0f));
-			m_robot[PLAYER_SHIELD_PIVOT].SetAngle(Vector3(0.0f, 0.0f, 0.0f));
-			m_robot[PLAYER_SHIELD_PIVOT].SetTrans(m_robotStartPos[PLAYER_SHIELD_PIVOT]);
-
-			m_robot[PLAYER_ARM_R_PIVOT].SetAngle(Vector3(0.0f, 0.0f, 0.0f));
-			m_robot[PLAYER_ARM_L_PIVOT].SetAngle(Vector3(0.0f, 0.0f, 0.0f));
-			m_isShieldAttack = false;
-			m_isShieldGimmic = false;
-		}
-	}
 }
