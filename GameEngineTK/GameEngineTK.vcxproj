@@ -163,6 +163,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DebugCamera.h" />
+    <ClInclude Include="Enemy\Enemy.h" />
     <ClInclude Include="FollowCamera.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="KeyBoardManager.h" />
@@ -180,6 +181,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DebugCamera.cpp" />
+    <ClCompile Include="Enemy\Enemy.cpp" />
     <ClCompile Include="FollowCamera.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="KeyBoardManager.cpp" />
@@ -214,17 +216,22 @@
   </ItemGroup>
   <ItemGroup>
     <MeshContentTask Include="Assets\Arm.FBX" />
+    <MeshContentTask Include="Assets\base.FBX" />
     <MeshContentTask Include="Assets\Body.FBX" />
     <MeshContentTask Include="Assets\BodyTop.FBX" />
     <MeshContentTask Include="Assets\Cannon.FBX" />
+    <MeshContentTask Include="Assets\engine.FBX" />
+    <MeshContentTask Include="Assets\fan.FBX" />
     <MeshContentTask Include="Assets\Foot.FBX" />
     <MeshContentTask Include="Assets\Ground1.FBX" />
     <MeshContentTask Include="Assets\Ground200.FBX" />
     <MeshContentTask Include="Assets\Hand.FBX" />
     <MeshContentTask Include="Assets\Head.FBX" />
     <MeshContentTask Include="Assets\Leg.FBX" />
+    <MeshContentTask Include="Assets\score.FBX" />
     <MeshContentTask Include="Assets\Shield.FBX" />
     <MeshContentTask Include="Assets\Sky1.FBX" />
+    <MeshContentTask Include="Assets\tower.FBX" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

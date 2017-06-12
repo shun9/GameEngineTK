@@ -11,6 +11,9 @@
     <Filter Include="Player">
       <UniqueIdentifier>{03fec4f2-b812-4d52-94c7-c70972b6dfc8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Enemy">
+      <UniqueIdentifier>{ae1e2fff-6cda-4f51-89ea-73ef94b2edeb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -48,6 +51,9 @@
       <Filter>Player</Filter>
     </ClInclude>
     <ClInclude Include="KeyBoardManager.h" />
+    <ClInclude Include="Enemy\Enemy.h">
+      <Filter>Enemy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -82,6 +88,9 @@
       <Filter>Player</Filter>
     </ClCompile>
     <ClCompile Include="KeyBoardManager.cpp" />
+    <ClCompile Include="Enemy\Enemy.cpp">
+      <Filter>Enemy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
@@ -131,6 +140,21 @@
       <Filter>Assets</Filter>
     </MeshContentTask>
     <MeshContentTask Include="Assets\Hand.FBX">
+      <Filter>Assets</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Assets\engine.FBX">
+      <Filter>Assets</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Assets\fan.FBX">
+      <Filter>Assets</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Assets\score.FBX">
+      <Filter>Assets</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Assets\tower.FBX">
+      <Filter>Assets</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Assets\base.FBX">
       <Filter>Assets</Filter>
     </MeshContentTask>
   </ItemGroup>

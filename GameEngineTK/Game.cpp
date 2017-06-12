@@ -71,6 +71,17 @@ void Game::Initialize(HWND window, int width, int height)
 	m_ground = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources\\Ground200.cmo", *m_effectFactory);
 	m_sky = std::make_unique<Obj3d>();
 	m_sky->LoadModel(L"Resources\\Sky1.cmo");
+
+
+	// 敵の生成
+	int enemyNum = rand() % 10 + 1;
+	m_enemies.resize(enemyNum);
+	for (int i = 0; i < enemyNum; i++)
+	{
+		m_enemies[i] = std::make_unique<Enemy>();
+		m_enemies[i]->Initialize();
+	}
+
 }
 
 // Executes the basic game loop.
@@ -109,6 +120,18 @@ void Game::Update(DX::StepTimer const& timer)
 
 
 	m_player->Update();
+
+	for (auto it = m_enemies.begin();it != m_enemies.end();it++)
+	{
+		// デバッグしやすい書き方
+		//Enemy* enemy = it->get();
+
+		//enemy->Update();
+
+		// 短く書ける書き方
+		(*it)->Update();
+	}
+
 }
 
 
@@ -132,6 +155,11 @@ void Game::Render()
 	m_sky->Render();
 
 	m_player->Render();
+
+	for (auto it = m_enemies.begin();it != m_enemies.end();it++)
+	{
+		(*it)->Draw();
+	}
 
     Present();
 }

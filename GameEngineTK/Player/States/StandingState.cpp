@@ -30,6 +30,9 @@ void StandingState::Enter(Player* player)
 PlayerState* StandingState::HandleInput(Player* player)
 {
 	auto kb = KeyBoardManager::GetInstance()->GetState();
+	DirectX::Keyboard::KeyboardStateTracker tracker;
+
+	tracker.Update(kb);
 
 	//移動キーで移動
 	if (kb.A || kb.W || kb.D || kb.S)
@@ -38,19 +41,19 @@ PlayerState* StandingState::HandleInput(Player* player)
 	}
 
 	//Zキーで頭飛ばし
-	if (kb.Z)
+	if (tracker.pressed.Z)
 	{
 		return LongRangeAttackState::GetInstance();
 	}
 
 	//Xキーで防御態勢
-	if (kb.X)
+	if (tracker.pressed.X)
 	{
 		return DefenseState::GetInstance();
 	}
 
 	//Cキーで盾攻撃
-	if (kb.C)
+	if (tracker.pressed.C)
 	{
 		return ShortRangeAttackState::GetInstance();
 	}

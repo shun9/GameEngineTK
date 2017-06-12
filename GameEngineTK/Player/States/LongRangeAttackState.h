@@ -25,6 +25,13 @@ private:
 	float m_time;
 	float m_headPos;
 
+	DirectX::SimpleMath::Vector3 m_bulletTrans;
+
+	DirectX::SimpleMath::Vector3 m_firstTrans;
+	DirectX::SimpleMath::Vector3 m_firstScale;
+	DirectX::SimpleMath::Vector3 m_firstAngle;
+	Obj3d* m_firstParent;
+
 public:
 	void Enter(Player* player) override;
 	PlayerState* HandleInput(Player* player) override;

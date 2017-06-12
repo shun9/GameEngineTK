@@ -42,6 +42,12 @@ private:
 	//回転用ベクトル
 	DirectX::SimpleMath::Vector3 m_angle;
 
+	//回転用　クオータニオン
+	DirectX::SimpleMath::Quaternion m_angleQ;
+
+	//回転がクオータニオンかどうか
+	bool m_isUseQuaternion;
+
 	//拡大率
 	DirectX::SimpleMath::Vector3 m_scale;
 
@@ -58,13 +64,14 @@ public:
 	void LoadModel(const wchar_t* path);
 	void SetScale(const DirectX::SimpleMath::Vector3& scale) { m_scale = scale; }
 	void SetTrans(const DirectX::SimpleMath::Vector3& trance) { m_trance = trance; }
-	void SetAngle(const DirectX::SimpleMath::Vector3& angle) { m_angle = angle; }
+	void SetAngle(const DirectX::SimpleMath::Vector3& angle) { m_angle = angle; m_isUseQuaternion = false; }
+	void SetAngleQ(const DirectX::SimpleMath::Quaternion& angle) { m_angleQ = angle; m_isUseQuaternion = true; }
 	void SetParent(Obj3d* parent) { m_parent = parent; }
 
 	DirectX::SimpleMath::Matrix GetWorld() { return m_world; }
 	const DirectX::SimpleMath::Vector3& GetScale() { return m_scale; }
 	const DirectX::SimpleMath::Vector3& GetTrans() { return m_trance; }
 	const DirectX::SimpleMath::Vector3& GetAngle() { return m_angle; }
-	const Obj3d* GetParent() { return m_parent; }
+	Obj3d* GetParent() { return m_parent; }
 
 };

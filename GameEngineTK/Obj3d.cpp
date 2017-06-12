@@ -31,7 +31,8 @@ void Obj3d::InitStatic(Camera * camera, Microsoft::WRL::ComPtr<ID3D11Device> d3d
 
 Obj3d::Obj3d():
 	m_parent(nullptr),
-	m_scale(SimpleMath::Vector3(1.0f,1.0f,1.0f))
+	m_scale(SimpleMath::Vector3(1.0f,1.0f,1.0f)),
+	m_isUseQuaternion(false)
 {
 }
 
@@ -46,11 +47,21 @@ void Obj3d::Update()
 	//回転行列
 	Matrix scale = Matrix::CreateScale(m_scale);
 
+	Matrix rotate;
 	//回転行列
-	Matrix rotateZ = Matrix::CreateRotationZ(XMConvertToRadians( m_angle.z));
-	Matrix rotateX = Matrix::CreateRotationX(XMConvertToRadians(m_angle.x));
-	Matrix rotateY = Matrix::CreateRotationY(XMConvertToRadians(m_angle.y));
-	Matrix rotate  = rotateZ* rotateX* rotateY;
+	if (m_isUseQuaternion)
+	{
+		rotate = Matrix::CreateFromQuaternion(m_angleQ);
+	}
+	else
+	{
+		Matrix rotateZ = Matrix::CreateRotationZ(XMConvertToRadians(m_angle.z));
+		Matrix rotateX = Matrix::CreateRotationX(XMConvertToRadians(m_angle.x));
+		Matrix rotateY = Matrix::CreateRotationY(XMConvertToRadians(m_angle.y));
+		rotate = rotateZ* rotateX* rotateY;
+	}
+
+
 
 	//平行移動行列
 	Matrix trance = Matrix::CreateTranslation(m_trance);
