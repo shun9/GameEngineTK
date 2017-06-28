@@ -27,7 +27,7 @@ void LongRangeAttackState::Enter(Player * player)
 	(*player)[Player::PARTS_HEAD].SetAngleQ(rota);
 	(*player)[Player::PARTS_HEAD].SetTrans(pos);
 
-	m_bulletTrans = Vector3(0.0f, 0.0f, -1.0f);
+	m_bulletTrans = Vector3(0.0f, -0.4f, -1.0f);
 	m_bulletTrans = Vector3::Transform(m_bulletTrans, rota);
 }
 

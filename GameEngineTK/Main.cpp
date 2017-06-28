@@ -4,7 +4,10 @@
 
 #include "pch.h"
 #include "Game.h"
+
 #include <Keyboard.h>
+#include "Collision\Collision.h"
+
 using namespace DirectX;
 
 namespace
@@ -34,7 +37,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (FAILED(hr))
         return 1;
 
-    g_game = std::make_unique<Game>();
+	g_game = std::make_unique<Game>();
 
     // Register class and create window
     {
@@ -62,7 +65,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         RECT rc;
         rc.top = 0;
         rc.left = 0;
-        rc.right = static_cast<LONG>(w); 
+        rc.right = static_cast<LONG>(w);
         rc.bottom = static_cast<LONG>(h);
 
         AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);

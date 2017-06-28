@@ -15,6 +15,8 @@
 #include "Obj3d.h"
 #include "Player\Player.h"
 #include "Enemy\Enemy.h"
+#include "ShunLib\Effekseer\Effect.h"
+#include "ShunLib\Texture\Texture.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -74,16 +76,6 @@ private:
 
 private:
 
-	//ギミック用あれこれ
-	float m_rotation;		//回転用
-	float m_headPos;		//頭位置　頭打ち用
-	int m_bigShieldCnt;		//時間のカウント　防御態勢用
-	int m_shieldAttackCnt;	//時間のカウント　盾攻撃用
-	bool m_isHeadShoot;		//頭打ちフラグ
-	bool m_isBigShield;		//防御態勢フラグ
-	bool m_isShieldAttack;	//盾攻撃フラグ
-	bool m_isShieldGimmic;	//盾全般フラグ
-
 	std::unique_ptr<Player> m_player;
 
 	//ステート
@@ -103,4 +95,10 @@ private:
 
 	// 敵
 	std::vector<std::unique_ptr<Enemy>> m_enemies;
+
+	//敵消滅エフェクト
+	std::unique_ptr<ShunLib::Effect>m_effect;
+
+	//クリア画像
+	std::unique_ptr<ShunLib::Texture>m_clearTexture;
 };

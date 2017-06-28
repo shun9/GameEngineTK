@@ -7,6 +7,7 @@
 
 #include "Enemy.h"
 #include "../KeyBoardManager.h"
+#include "../ShunLib/RandomNumber/RandomNumber.h"
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
@@ -78,11 +79,29 @@ void Enemy::Initialize()
 	m_Obj[PARTS_FAN].SetTrans(
 		Vector3(0, 0.3f, 1.0f));
 
+
+	{
+		//武器当たり判定初期化
+		m_collisionNodeBody.Initialize();
+
+		//武器に当たり判定を設定
+		m_collisionNodeBody.SetParent(&m_Obj[0]);
+
+		// 武器パーツからのオフセット
+		m_collisionNodeBody.SetTrans(Vector3(0, 0, 0));
+
+		// 当たり判定の半径
+		m_collisionNodeBody.SetLocalRadius(1.0f);
+	}
+
+
 	// 初期座標をランダムに決定
 	Vector3 pos;
 
-	pos.x = rand() % 10;
-	pos.z = rand() % 10;
+	ShunLib::RandomNumber rn;
+
+	pos.x = rn(-10.0f,10.0f);
+	pos.z = rn(-10.0f,10.0f);
 
 	SetTrans(pos);
 
@@ -170,6 +189,7 @@ void Enemy::Update()
 
 	// 行列更新
 	Calc();
+	m_collisionNodeBody.Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -183,6 +203,7 @@ void Enemy::Calc()
 	{
 		it->Update();
 	}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -196,6 +217,7 @@ void Enemy::Draw()
 	{
 		it->Render();
 	}
+	//m_collisionNodeBody.Draw();
 }
 
 const DirectX::SimpleMath::Vector3& Enemy::GetTrans()
@@ -225,5 +247,5 @@ void Enemy::SetRot(const DirectX::SimpleMath::Vector3& rot)
 const DirectX::SimpleMath::Matrix& Enemy::GetLocalWorld()
 {
 	// タンクパーツのワールド行列を返す
-	return m_Obj[0].GetWorld();
+	return (m_Obj[0].GetWorld());
 }

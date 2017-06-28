@@ -14,6 +14,12 @@
     <Filter Include="Enemy">
       <UniqueIdentifier>{ae1e2fff-6cda-4f51-89ea-73ef94b2edeb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{e8bc1ecd-8880-43d9-bf4d-ecbf7eee2aff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShunLib">
+      <UniqueIdentifier>{b896781b-62e9-4494-998d-6cc5bec84a67}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -54,6 +60,33 @@
     <ClInclude Include="Enemy\Enemy.h">
       <Filter>Enemy</Filter>
     </ClInclude>
+    <ClInclude Include="Collision\Collision.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\CollisionNode.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\SphereNode.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="ShunLib\Effekseer\Effect.h">
+      <Filter>ShunLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ShunLib\Vec3\Vec3.h">
+      <Filter>ShunLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ShunLib\Matrix\Matrix.h">
+      <Filter>ShunLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ShunLib\ConstantNumber\MacroConstants.h">
+      <Filter>ShunLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ShunLib\RandomNumber\RandomNumber.h">
+      <Filter>ShunLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ShunLib\Texture\Texture.h">
+      <Filter>ShunLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -90,6 +123,30 @@
     <ClCompile Include="KeyBoardManager.cpp" />
     <ClCompile Include="Enemy\Enemy.cpp">
       <Filter>Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\Collision.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\CollisionNode.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision\SphereNode.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="ShunLib\Effekseer\Effect.cpp">
+      <Filter>ShunLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ShunLib\Vec3\Vec3.cpp">
+      <Filter>ShunLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ShunLib\Matrix\Matrix.cpp">
+      <Filter>ShunLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ShunLib\RandomNumber\RandomNumber.cpp">
+      <Filter>ShunLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ShunLib\Texture\Texture.cpp">
+      <Filter>ShunLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +212,9 @@
       <Filter>Assets</Filter>
     </MeshContentTask>
     <MeshContentTask Include="Assets\base.FBX">
+      <Filter>Assets</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Assets\SphereNode.FBX">
       <Filter>Assets</Filter>
     </MeshContentTask>
   </ItemGroup>

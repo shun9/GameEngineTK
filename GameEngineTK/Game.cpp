@@ -10,6 +10,7 @@
 #include "Player\States\MoveState.h"
 #include "Player\States\ShortRangeAttackState.h"
 #include "Player\States\StandingState.h"
+#include "ShunLib\RandomNumber\RandomNumber.h"
 
 extern void ExitGame();
 
@@ -47,12 +48,18 @@ void Game::Initialize(HWND window, int width, int height)
     */
 	/*--以下に記述--*/
 	//カメラ生成
-	m_camera = std::make_unique<FollowCamera>();
+	m_camera = std::make_unique<FollowCamera>(m_outputWidth, m_outputHeight);
 	m_camera->SetKeyboard(KeyBoardManager::GetInstance()->GetKeyBoard());
 
 	Obj3d::InitStatic(m_camera.get(), m_d3dDevice, m_d3dContext);
+	ShunLib::Effect::SetDevice(m_d3dDevice, m_d3dContext);
+	ShunLib::Texture::SetDevice(m_d3dDevice, m_d3dContext);
 
 	m_player = std::make_unique<Player>();
+
+	m_effect = std::make_unique<ShunLib::Effect>(L"Effect\\Aya_Attack.efk", 120, 512);
+
+	m_clearTexture = std::make_unique<ShunLib::Texture>(L"Resources\\GAME_CLEAR_2.png");
 
 	//行列初期化
 	m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.5f),
@@ -60,9 +67,6 @@ void Game::Initialize(HWND window, int width, int height)
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
 		float(m_outputWidth) / float(m_outputHeight), 0.1f, 1000.0f);
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
-
-	//カメラ生成
-	m_debugCamera = std::make_unique<DebugCamera>(m_outputWidth, m_outputHeight);
 
 	//エフェクトファクトリー生成
 	m_effectFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
@@ -74,7 +78,10 @@ void Game::Initialize(HWND window, int width, int height)
 
 
 	// 敵の生成
-	int enemyNum = rand() % 10 + 1;
+	ShunLib::RandomNumber rn;
+
+	int enemyNum = rn(5,20);
+
 	m_enemies.resize(enemyNum);
 	for (int i = 0; i < enemyNum; i++)
 	{
@@ -105,16 +112,6 @@ void Game::Update(DX::StepTimer const& timer)
 	/*--以下に記述--*/
 	elapsedTime;
 
-	//カメラ更新
-	m_camera->SetTargetPos(m_player->GetTrans());
-	m_camera->SetAngle(0.0f);
-	m_camera->Update();
-
-	m_sky->Update();
-
-	//行列設定
-	m_view = m_camera->GetView();
-	m_proj = m_camera->GetProj();
 
 	auto key = KeyBoardManager::GetInstance()->GetKeyBoard();
 
@@ -131,6 +128,59 @@ void Game::Update(DX::StepTimer const& timer)
 		// 短く書ける書き方
 		(*it)->Update();
 	}
+
+
+	/*--[敵と自機の弾の当たり判定]--*/
+	{
+		using namespace ShunLib;
+
+		const Sphere& bulletSphere = m_player->GetBulletCollisionNode();
+
+		// 敵の数だけ処理する
+		for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemies.begin();
+			it != m_enemies.end();
+			)
+		{
+			Enemy* enemy = it->get();
+
+			// 敵の判定球取得
+			const Sphere& enemySphere = enemy->GetBodyCollisionNode();
+
+			// 二つの球が当たっていたら
+			if (CheckSphere2Sphere(bulletSphere, enemySphere))
+			{
+				using Vec3 = ShunLib::Vec3;
+
+				auto pos = (*it)->GetTrans();
+
+				// 敵を殺す
+				m_effect->SetDraw();
+				m_effect->SetPos(Vec3(pos.x,pos.y,pos.z));
+				m_effect->SetScale(1.0f);
+
+				// eraseした要素の次を指すイテレータを取得
+				it = m_enemies.erase(it);
+			}
+			else
+			{
+				// イテレータを一つ進める
+				it++;
+			}
+		}
+	}
+
+
+	//カメラ更新
+	m_camera->SetTargetPos(m_player->GetTrans());
+	//m_camera->SetAngle(0.0f);
+	m_camera->SetAngle(m_player->GetAngle().y);
+	m_camera->Update();
+
+	m_sky->Update();
+
+	//行列設定
+	m_view = m_camera->GetView();
+	m_proj = m_camera->GetProj();
 
 }
 
@@ -156,9 +206,17 @@ void Game::Render()
 
 	m_player->Render();
 
+	m_effect->Draw(m_view, m_proj);
+	//m_effect->DrawLoop(m_view, m_proj);
+
 	for (auto it = m_enemies.begin();it != m_enemies.end();it++)
 	{
 		(*it)->Draw();
+	}
+
+	if (m_enemies.empty())
+	{
+		m_clearTexture->Draw(150, 0);
 	}
 
     Present();

@@ -13,6 +13,7 @@
 #include <vector>
 #include "../Obj3d.h"
 
+#include "../Collision/SphereNode.h"
 
 // 自機
 class Enemy
@@ -53,6 +54,8 @@ public:
 	// ワールド行列を取得
 	const DirectX::SimpleMath::Matrix& GetLocalWorld();
 
+	const ShunLib::SphereNode& GetBodyCollisionNode() { return m_collisionNodeBody; }
+
 protected:
 	// メンバ変数
 	// ロボットの構成パーツ
@@ -67,5 +70,8 @@ protected:
 	int m_Timer;
 	// 目標角度
 	float m_DistAngle;
+
+	//球の当たり判定
+	ShunLib::SphereNode m_collisionNodeBody;
 };
 

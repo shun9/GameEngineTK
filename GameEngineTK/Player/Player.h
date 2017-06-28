@@ -11,16 +11,17 @@
 #include <WICTextureLoader.h>
 #include <algorithm>
 #include <Memory>
-
 #include <Keyboard.h>
 
-#include "../Obj3d.h"
 #include <vector>
+
+#include "../Obj3d.h"
+#include "../Collision/SphereNode.h"
 
 class PlayerState;
 
-class Player : public Obj3d
-{
+class Player : public Obj3d{
+
 	protected:
 		//ロボット
 		std::vector<Obj3d>m_robot;
@@ -34,6 +35,9 @@ class Player : public Obj3d
 
 		// 加速度
 		DirectX::SimpleMath::Vector3 m_acceleSpeed;
+
+		//球の当たり判定
+		ShunLib::SphereNode m_collisionNodeBullet;
 
 	public:
 		enum PARTS
@@ -56,6 +60,7 @@ class Player : public Obj3d
 
 			PARTS_NUM,	        //パーツの数
 		};
+
 public:
 		Player();
 		virtual ~Player(){}
@@ -66,28 +71,23 @@ public:
 		// 描画
 		void Render();
 
-		// getter =====
-		// 速度の取得
+		/*--[情報取得]--*/
 		const DirectX::SimpleMath::Vector3 GetSpeed() { return m_speed; }
-
-		// 加速度の取得
 		const DirectX::SimpleMath::Vector3 GetAcceleSpeed() { return m_acceleSpeed; }
-
 		const DirectX::SimpleMath::Vector3 GetPartsStartPos(int partsNum) { return m_robotStartPos[partsNum]; }
-
 		Obj3d& GetParts(int num) { return m_robot[num]; }
+		const ShunLib::SphereNode& GetBulletCollisionNode() { return m_collisionNodeBullet; }
 
-		// setter =====
 
-		// 速度の設定
+		/*--[情報設定]--*/
 		void SetSpeed(const DirectX::SimpleMath::Vector3& speed){ m_speed = speed; }
-
-		// 加速度の設定
 		void SetAcceleSpeed(const DirectX::SimpleMath::Vector3& speed) { m_acceleSpeed = speed; }
 
 	private:
+		//初期化
 		void Init();
 
 public:
+	//パーツ情報を直接取得できるように
 	Obj3d& operator[](int num) { return m_robot[num]; }
 };

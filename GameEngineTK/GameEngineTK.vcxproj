@@ -70,14 +70,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\DirectXTK\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>C:\EffekseerRuntime122\Compiled\include;C:\DirectXTK\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\EffekseerRuntime122\Compiled\lib\VS2015\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\DirectXTK\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>C:\EffekseerRuntime122\Compiled\include;C:\DirectXTK\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\EffekseerRuntime122\Compiled\lib\VS2015\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -96,7 +98,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EffekseerRendererDX11.lib;Effekseer.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <MeshContentTask>
       <ContentOutput>Resources\%(Filename).cmo</ContentOutput>
@@ -135,7 +137,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EffekseerRendererDX11.lib;Effekseer.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <MeshContentTask>
       <ContentOutput>Resources\%(Filename).cmo</ContentOutput>
@@ -162,6 +164,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Collision\Collision.h" />
+    <ClInclude Include="Collision\CollisionNode.h" />
+    <ClInclude Include="Collision\SphereNode.h" />
     <ClInclude Include="DebugCamera.h" />
     <ClInclude Include="Enemy\Enemy.h" />
     <ClInclude Include="FollowCamera.h" />
@@ -176,10 +181,19 @@
     <ClInclude Include="Player\States\MoveState.h" />
     <ClInclude Include="Player\States\ShortRangeAttackState.h" />
     <ClInclude Include="Player\States\StandingState.h" />
+    <ClInclude Include="ShunLib\ConstantNumber\MacroConstants.h" />
+    <ClInclude Include="ShunLib\Effekseer\Effect.h" />
+    <ClInclude Include="ShunLib\Matrix\Matrix.h" />
+    <ClInclude Include="ShunLib\RandomNumber\RandomNumber.h" />
+    <ClInclude Include="ShunLib\Texture\Texture.h" />
+    <ClInclude Include="ShunLib\Vec3\Vec3.h" />
     <ClInclude Include="StepTimer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Collision\Collision.cpp" />
+    <ClCompile Include="Collision\CollisionNode.cpp" />
+    <ClCompile Include="Collision\SphereNode.cpp" />
     <ClCompile Include="DebugCamera.cpp" />
     <ClCompile Include="Enemy\Enemy.cpp" />
     <ClCompile Include="FollowCamera.cpp" />
@@ -199,6 +213,11 @@
     <ClCompile Include="Player\States\MoveState.cpp" />
     <ClCompile Include="Player\States\ShortRangeAttackState.cpp" />
     <ClCompile Include="Player\States\StandingState.cpp" />
+    <ClCompile Include="ShunLib\Effekseer\Effect.cpp" />
+    <ClCompile Include="ShunLib\Matrix\Matrix.cpp" />
+    <ClCompile Include="ShunLib\RandomNumber\RandomNumber.cpp" />
+    <ClCompile Include="ShunLib\Texture\Texture.cpp" />
+    <ClCompile Include="ShunLib\Vec3\Vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
@@ -231,6 +250,7 @@
     <MeshContentTask Include="Assets\score.FBX" />
     <MeshContentTask Include="Assets\Shield.FBX" />
     <MeshContentTask Include="Assets\Sky1.FBX" />
+    <MeshContentTask Include="Assets\SphereNode.FBX" />
     <MeshContentTask Include="Assets\tower.FBX" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

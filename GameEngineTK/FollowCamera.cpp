@@ -9,7 +9,7 @@ using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
 //カメラと自機の距離
-const float FollowCamera::CAMERA_DISTANSE = 8.0f;
+const float FollowCamera::CAMERA_DISTANSE = 5.0f;
 const bool FollowCamera::FPS = true;
 const bool FollowCamera::TPS = false;
 
@@ -36,7 +36,7 @@ void FollowCamera::InitiallizeTPS()
 	Vector3 cameraV(0.0f, 0.0f, CAMERA_DISTANSE);
 
 	//自機の後ろに回り込むための回転
-	Matrix rot = Matrix::CreateRotationY(m_targetAngle);
+	Matrix rot = Matrix::CreateRotationY(XMConvertToRadians(m_targetAngle));
 	cameraV = Vector3::TransformNormal(cameraV, rot);
 	Vector3 eyePos = refPos + cameraV;
 
@@ -71,13 +71,13 @@ void FollowCamera::Update()
 	if (m_cameraMode == TPS)
 	{
 		//自機の上方
-		Vector3 refPos = m_targetPos + Vector3(0.0f, 1.5f, 0.0f);
+		Vector3 refPos = m_targetPos + Vector3(0.0f, 2.5f, 0.0f);
 
 		//参照点から視点への差分
 		Vector3 cameraV(0.0f, 0.0f, CAMERA_DISTANSE);
 
 		//自機の後ろに回り込むための回転
-		Matrix rot = Matrix::CreateRotationY(m_targetAngle);
+		Matrix rot = Matrix::CreateRotationY(XMConvertToRadians(m_targetAngle));
 		cameraV = Vector3::TransformNormal(cameraV, rot);
 		Vector3 eyePos = refPos + cameraV;
 
@@ -94,7 +94,7 @@ void FollowCamera::Update()
 		Vector3 cameraV(0.0f, 0.0f, -CAMERA_DISTANSE);
 
 		//自機の後ろに回り込むための回転
-		Matrix rot = Matrix::CreateRotationY(m_targetAngle);
+		Matrix rot = Matrix::CreateRotationY(XMConvertToRadians(m_targetAngle));
 		cameraV = Vector3::TransformNormal(cameraV, rot);
 
 		Vector3 refPos = eyePos + cameraV;

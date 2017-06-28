@@ -10,12 +10,16 @@ Player::Player():
 	m_speed(Vector3(0.0f, 0.0f, 0.0f))	,
 	m_acceleSpeed(Vector3(0.0f, 0.05f, 0.0f))
 {
+	//初期化
 	Init();
 
 	// デフォルトのステート設定
 	m_state = StandingState::GetInstance();
 }
 
+/// <summary>
+/// 更新処理
+/// </summary>
 void Player::Update()
 {
 	// ステートの更新
@@ -44,8 +48,14 @@ void Player::Update()
 	{
 		(*itr).Update();
 	}
+
+	//当たり判定の更新
+	m_collisionNodeBullet.Update();
 }
 
+/// <summary>
+/// 描画処理
+/// </summary>
 void Player::Render()
 {
 	// 全パーツの描画
@@ -53,8 +63,14 @@ void Player::Render()
 	{
 		(*itr).Render();
 	}
+
+	//当たり判定表示（デバッグ用）
+	//m_collisionNodeBullet.Draw();
 }
 
+/// <summary>
+/// 初期化処理
+/// </summary>
 void Player::Init()
 {
 	//ロボットの生成
@@ -132,5 +148,19 @@ void Player::Init()
 	for (robotItr = m_robot.begin(); robotItr != m_robot.end(); robotItr++)
 	{
 		m_robotStartPos.push_back(Vector3((*robotItr).GetTrans()));
+	}
+
+	{
+		//武器当たり判定初期化
+		m_collisionNodeBullet.Initialize();
+
+		//武器に当たり判定を設定
+		m_collisionNodeBullet.SetParent(&m_robot[PARTS_HEAD]);
+
+		// 武器パーツからのオフセット
+		m_collisionNodeBullet.SetTrans(Vector3(0, 0, 0));
+
+		// 当たり判定の半径
+		m_collisionNodeBullet.SetLocalRadius(0.2f);
 	}
 }

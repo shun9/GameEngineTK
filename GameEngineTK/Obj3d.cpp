@@ -75,6 +75,7 @@ void Obj3d::Update()
 	}
 }
 
+
 void Obj3d::Render()
 {
 	if (m_model != nullptr)
